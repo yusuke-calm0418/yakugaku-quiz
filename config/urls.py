@@ -17,11 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from accounts.views import home
+from quiz.views import question_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # トップページ
     path('', home),
+    
+    # クイズ画面
+    path('quiz/', question_view),
 
     # ログイン系
     path('accounts/', include('django.contrib.auth.urls')),

@@ -1,0 +1,36 @@
+<h1>クイズ</h1>
+
+{% if question %}
+  <p>{{ question.text }}</p>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- ここに入れる🔥 -->
+    <input type="hidden" name="question_id" value="{{ question.id }}">
+
+    <button name="choice" value="1">{{ question.choice1 }}</button><br>
+    <button name="choice" value="2">{{ question.choice2 }}</button><br>
+    <button name="choice" value="3">{{ question.choice3 }}</button><br>
+    <button name="choice" value="4">{{ question.choice4 }}</button><br>
+  </form>
+
+  {% if result %}
+    <h2>{{ result }}</h2>
+
+    {% if is_correct %}
+      <p style="color: green;">正解です！</p>
+    {% else %}
+      <p style="color: red;">残念！</p>
+    {% endif %}
+
+    <h3>解説</h3>
+    <p>{{ question.explanation }}</p>
+  {% endif %}
+    <form method="get">
+        <button>次の問題へ</button>
+    </form>
+
+{% else %}
+  <p>問題がありません</p>
+{% endif %}

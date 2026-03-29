@@ -1,19 +1,43 @@
 <h1>クイズ</h1>
+<a href="/quiz/">通常モード</a> |
+<a href="/quiz/?mode=weak">苦手問題モード</a>
+
+<h3>分野選択</h3>
+
+<a href="/quiz/">すべて</a> |
+<a href="/quiz/?category=physics_chemistry_biology">物理・化学・生物</a> |
+<a href="/quiz/?category=hygiene">衛生</a> |
+<a href="/quiz/?category=pharmacology">薬理</a> |
+<a href="/quiz/?category=pharmaceutics">薬剤</a> |
+<a href="/quiz/?category=pathology">病態・薬物治療</a> |
+<a href="/quiz/?category=law_ethics">法規・制度・倫理</a> |
+<a href="/quiz/?category=practice">実務</a>
 
 {% if question %}
   <p>{{ question.text }}</p>
 
   <form method="post">
     {% csrf_token %}
-
-    <!-- ここに入れる🔥 -->
     <input type="hidden" name="question_id" value="{{ question.id }}">
 
-    <button name="choice" value="1">{{ question.choice1 }}</button><br>
-    <button name="choice" value="2">{{ question.choice2 }}</button><br>
-    <button name="choice" value="3">{{ question.choice3 }}</button><br>
-    <button name="choice" value="4">{{ question.choice4 }}</button><br>
+    <button name="choice" value="1" {% if result %}disabled{% endif %}>
+      {{ question.choice1 }}
+    </button><br>
+
+    <button name="choice" value="2" {% if result %}disabled{% endif %}>
+      {{ question.choice2 }}
+    </button><br>
+
+    <button name="choice" value="3" {% if result %}disabled{% endif %}>
+      {{ question.choice3 }}
+    </button><br>
+
+    <button name="choice" value="4" {% if result %}disabled{% endif %}>
+      {{ question.choice4 }}
+    </button><br>
   </form>
+
+  <p>正答率：{{ accuracy }}%</p>
 
   {% if result %}
     <h2>{{ result }}</h2>
@@ -22,14 +46,23 @@
       <p style="color: green;">正解です！</p>
     {% else %}
       <p style="color: red;">残念！</p>
+
+      <p>正解は：
+        {% if correct_answer == 1 %}{{ question.choice1 }}
+        {% elif correct_answer == 2 %}{{ question.choice2 }}
+        {% elif correct_answer == 3 %}{{ question.choice3 }}
+        {% elif correct_answer == 4 %}{{ question.choice4 }}
+        {% endif %}
+      </p>
     {% endif %}
 
     <h3>解説</h3>
     <p>{{ question.explanation }}</p>
-  {% endif %}
+
     <form method="get">
-        <button>次の問題へ</button>
+      <button type="submit">次の問題へ</button>
     </form>
+  {% endif %}
 
 {% else %}
   <p>問題がありません</p>

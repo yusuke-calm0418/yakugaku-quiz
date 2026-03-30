@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from quiz.models import Answer
+from django.contrib.auth.forms import UserCreationForm
 
 def home(request):
     return render(request, 'home.html')
@@ -31,3 +32,14 @@ def mypage(request):
         'accuracy': accuracy,
         'weak_count': weak_count
     })
+
+def signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('/accounts/login/')
+    else:
+        form = UserCreationForm()
+
+    return render(request, 'registration/signup.html', {'form': form})

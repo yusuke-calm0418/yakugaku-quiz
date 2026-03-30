@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 class Question(models.Model):
-    
     CATEGORY_CHOICES = [
         ('physics_chemistry_biology', '物理・化学・生物'),
         ('hygiene', '衛生'),
@@ -13,16 +12,23 @@ class Question(models.Model):
         ('law_ethics', '法規・制度・倫理'),
         ('practice', '実務'),
     ]
-    
+    QUESTION_TYPE_CHOICES = [
+        ('required', '必須問題'),
+        ('general', '一般問題'),
+    ]
     text = models.TextField()
     choice1 = models.CharField(max_length=255)
     choice2 = models.CharField(max_length=255)
     choice3 = models.CharField(max_length=255)
     choice4 = models.CharField(max_length=255)
-    correct = models.IntegerField()
+    correct = models.CharField(max_length=10) 
     explanation = models.TextField()
-    
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    question_type = models.CharField(
+        max_length=20,
+        choices=QUESTION_TYPE_CHOICES,
+        default='general'
+    )
 
     def __str__(self):
         return self.text[:50]

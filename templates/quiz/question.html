@@ -1,4 +1,6 @@
 <h1>クイズ</h1>
+
+<!-- モード -->
 <a href="/quiz/">通常モード</a> |
 <a href="/quiz/?mode=weak">苦手問題モード</a>
 
@@ -13,6 +15,11 @@
 <a href="/quiz/?category=law_ethics">法規・制度・倫理</a> |
 <a href="/quiz/?category=practice">実務</a>
 
+<h3>問題種別</h3>
+<a href="/quiz/">すべて</a> |
+<a href="/quiz/?question_type=required">必須問題</a> |
+<a href="/quiz/?question_type=general">一般問題</a>
+
 {% if question %}
   <p>{{ question.text }}</p>
 
@@ -20,23 +27,75 @@
     {% csrf_token %}
     <input type="hidden" name="question_id" value="{{ question.id }}">
 
-    <button name="choice" value="1" {% if result %}disabled{% endif %}>
-      {{ question.choice1 }}
-    </button><br>
+    <!-- ===================== -->
+    <!-- 単一選択（必須問題） -->
+    <!-- ===================== -->
+    {% if question.question_type == 'required' %}
+      <input type="radio" name="choice" value="1" {% if result %}disabled{% endif %}>
+        {{ question.choice1 }}
+      </input><br>
 
-    <button name="choice" value="2" {% if result %}disabled{% endif %}>
-      {{ question.choice2 }}
-    </button><br>
+      <input type="radio" name="choice" value="2" {% if result %}disabled{% endif %}>
+        {{ question.choice2 }}
+      </input><br>
 
-    <button name="choice" value="3" {% if result %}disabled{% endif %}>
-      {{ question.choice3 }}
-    </button><br>
+      <input type="radio" name="choice" value="3" {% if result %}disabled{% endif %}>
+        {{ question.choice3 }}
+      </input><br>
 
-    <button name="choice" value="4" {% if result %}disabled{% endif %}>
-      {{ question.choice4 }}
-    </button><br>
+      <input type="radio" name="choice" value="4" {% if result %}disabled{% endif %}>
+        {{ question.choice4 }}
+      </input><br>
+      <button type="submit" {% if result %}disabled{% endif %}>
+        回答する
+      </button>
+
+    <!-- ===================== -->
+    <!-- 複数選択（一般問題） -->
+    <!-- ===================== -->
+    {% else %}
+      <label>
+        <input type="checkbox" name="choice" value="1" class="multi-choice" {% if result %}disabled{% endif %}>
+        {{ question.choice1 }}
+      </label><br>
+
+      <label>
+        <input type="checkbox" name="choice" value="2" class="multi-choice" {% if result %}disabled{% endif %}>
+        {{ question.choice2 }}
+      </label><br>
+
+      <label>
+        <input type="checkbox" name="choice" value="3" class="multi-choice" {% if result %}disabled{% endif %}>
+        {{ question.choice3 }}
+      </label><br>
+
+      <label>
+        <input type="checkbox" name="choice" value="4"class="multi-choice" {% if result %}disabled{% endif %}>
+        {{ question.choice4 }}
+      </label><br>
+      <button type="submit" {% if result %}disabled{% endif %}>
+        回答する
+      </button>
+      <script>
+        const checkboxes = document.querySelectorAll('.multi-choice');
+
+        checkboxes.forEach(box => {
+          box.addEventListener('change', () => {
+            const checked = document.querySelectorAll('.multi-choice:checked');
+
+            if (checked.length > 2) {
+              box.checked = false;
+              alert('2つまでしか選択できません');
+            }
+          });
+        });
+      </script>
+
+    {% endif %}
+
   </form>
 
+  <!-- 正答率 -->
   <p>正答率：{{ accuracy }}%</p>
 
   {% if result %}
@@ -47,12 +106,14 @@
     {% else %}
       <p style="color: red;">残念！</p>
 
+      <!-- 🔥複数対応の正解表示 -->
       <p>正解は：
-        {% if correct_answer == 1 %}{{ question.choice1 }}
-        {% elif correct_answer == 2 %}{{ question.choice2 }}
-        {% elif correct_answer == 3 %}{{ question.choice3 }}
-        {% elif correct_answer == 4 %}{{ question.choice4 }}
-        {% endif %}
+        {% for c in correct_answer %}
+          {% if c == "1" %}{{ question.choice1 }}{% endif %}
+          {% if c == "2" %}{{ question.choice2 }}{% endif %}
+          {% if c == "3" %}{{ question.choice3 }}{% endif %}
+          {% if c == "4" %}{{ question.choice4 }}{% endif %}
+        {% endfor %}
       </p>
     {% endif %}
 
@@ -67,3 +128,6 @@
 {% else %}
   <p>問題がありません</p>
 {% endif %}
+
+<!-- トップ -->
+<a href="/">トップに戻る</a>

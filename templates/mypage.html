@@ -5,4 +5,22 @@
 <p>正答率：{{ accuracy }}%</p>
 <p>苦手問題数：{{ weak_count }}問</p>
 
+{% if weak_questions %}
+    <h2>苦手問題</h2>
+    <ul>
+        {% for question in weak_questions %}
+            <li>{{ question.question_text }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>苦手な問題はありません！素晴らしいですね！</p>
+{% endif %}
+
+<!-- グラフ表示 -->
+<p>分野別正答率の棒グラフ入れる</p>
+
 <a href="/quiz/">クイズに戻る</a>
+<!-- トップに戻る -->
+<div class="">
+    <a href="/">トップに戻る</a>
+</div>

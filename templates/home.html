@@ -8,16 +8,16 @@
   <p>こんにちは {{ user.username }} さん</p>
 
   <a href="/quiz/">クイズを始める</a><br>
-
   <a href="/mypage/">マイページ</a><br>
 
-  <!-- 🔥ログアウトはここ -->
   <form action="/accounts/logout/" method="post">
     {% csrf_token %}
     <button type="submit">ログアウト</button>
   </form>
 
 {% else %}
-  <!-- 🔥未ログイン時はログイン -->
   <a href="/accounts/login/">ログイン</a>
+  <div class="">
+    <a href="/accounts/signup/">新規登録</a>
+  </div>
 {% endif %}

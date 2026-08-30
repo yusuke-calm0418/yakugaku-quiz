@@ -1,0 +1,19 @@
+# ==========================================
+# 変数設定サンプル (terraform.tfvars にリネームして使用)
+# ==========================================
+
+# AWS リージョン
+aws_region   = "ap-northeast-1"
+project_name = "yakugaku-quiz"
+environment  = "prod"
+
+# EC2 設定
+ec2_instance_type = "t3.micro"
+ec2_key_name      = "your-key-pair-name" # AWSマネジメントコンソールで作成したキーペア名
+allowed_ssh_cidr  = "0.0.0.0/0"          # セキュリティ強化のため自身のIP（例: "203.0.113.1/32"）推奨
+
+# RDS 設定
+rds_instance_class = "db.t4g.micro"
+db_name            = "yakugaku_quiz"
+db_username        = "postgres"
+db_password        = "YOUR_STRONG_PASSWORD_HERE" # 8文字以上の強固なパスワードを指定

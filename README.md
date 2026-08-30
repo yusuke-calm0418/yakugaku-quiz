@@ -27,6 +27,7 @@
 ├── accounts/       # 認証周り + トップ/マイページビュー
 ├── quiz/           # 問題/回答モデル、クイズロジック
 ├── templates/      # HTMLテンプレート
+├── terraform/      # AWSインフラ定義 (IaC)
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt

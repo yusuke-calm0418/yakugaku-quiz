@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}問題を解く | 薬学生のための薬剤師国家試験対策問題集{% endblock %}
+
+{% block content %}
+<div class="p-page-header">
+  <div class="l-container">
+    <h1 class="p-page-header__title">問題を解く</h1>
+  </div>
+</div>
+
+<div class="p-select-wrapper">
+  <div class="l-container">
+    <div class="p-select-grid">
+
+      <!-- ランダム出題カード -->
+      <div class="p-select-card" id="js-random-card">
+        <div class="p-select-card__icon-wrap">
+          <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 3 21 3 21 8"></polyline>
+            <line x1="4" y1="20" x2="21" y2="3"></line>
+            <polyline points="21 16 21 21 16 21"></polyline>
+            <line x1="15" y1="15" x2="21" y2="21"></line>
+          </svg>
+        </div>
+        <h2 class="p-select-card__title">ランダム出題</h2>
+        <p class="p-select-card__desc">
+          全分野からランダム出題。<br>
+          スキマ時間の学習におすすめ。<br>
+          <span class="p-select-card__note">※問題数を選択して、問題を解いてください</span>
+        </p>
+        <div class="p-select-card__count-group" id="js-random-counts">
+          <a href="/quiz/?count=10" class="p-select-count-btn js-count-btn" data-count="10">10問</a>
+          <a href="/quiz/?count=20" class="p-select-count-btn js-count-btn" data-count="20">20問</a>
+          <a href="/quiz/?count=50" class="p-select-count-btn js-count-btn" data-count="50">50問</a>
+          <a href="/quiz/?count=100" class="p-select-count-btn js-count-btn" data-count="100">100問</a>
+        </div>
+        <a href="/quiz/?count=10" class="p-select-card__btn js-start-btn" id="js-random-start">
+          問題を解く
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+
+      <!-- 科目ごと出題カード -->
+      <div class="p-select-card" id="js-category-card">
+        <div class="p-select-card__icon-wrap">
+          <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 3 21 3 21 8"></polyline>
+            <line x1="4" y1="20" x2="21" y2="3"></line>
+            <polyline points="21 16 21 21 16 21"></polyline>
+            <line x1="15" y1="15" x2="21" y2="21"></line>
+          </svg>
+        </div>
+        <h2 class="p-select-card__title">科目ごと出題（50問）</h2>
+        <p class="p-select-card__desc">
+          科目を選んで集中的に学習。<br>
+          基礎から応用まで幅広くカバー。<br>
+          <span class="p-select-card__note">※科目を選択して、問題を解いてください</span>
+        </p>
+        <div class="p-select-card__category-group">
+          {% for cat in categories %}
+            <a href="/quiz/?category={{ cat.code }}&count=50"
+               class="p-select-category-btn js-category-btn"
+               data-category="{{ cat.code }}"
+               data-url="/quiz/?category={{ cat.code }}&count=50">
+              {{ cat.name }}
+            </a>
+          {% endfor %}
+        </div>
+        <a href="/quiz/?count=50" class="p-select-card__btn js-category-start-btn" id="js-category-start">
+          問題を解く
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+
+      <!-- 苦手問題カード -->
+      <div class="p-select-card" id="js-weak-card">
+        <div class="p-select-card__icon-wrap">
+          <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 3 21 3 21 8"></polyline>
+            <line x1="4" y1="20" x2="21" y2="3"></line>
+            <polyline points="21 16 21 21 16 21"></polyline>
+            <line x1="15" y1="15" x2="21" y2="21"></line>
+          </svg>
+        </div>
+        <h2 class="p-select-card__title">苦手問題</h2>
+        <p class="p-select-card__desc">
+          間違えた問題を<br>
+          自動抽出して復習。
+        </p>
+        {% if user.is_authenticated %}
+          <div class="p-select-card__count-group" id="js-weak-counts">
+            <a href="/quiz/?mode=weak&count=10" class="p-select-count-btn js-weak-count-btn" data-count="10">10問</a>
+            <a href="/quiz/?mode=weak&count=20" class="p-select-count-btn js-weak-count-btn" data-count="20">20問</a>
+            <a href="/quiz/?mode=weak&count=50" class="p-select-count-btn js-weak-count-btn" data-count="50">50問</a>
+            <a href="/quiz/?mode=weak&count=100" class="p-select-count-btn js-weak-count-btn" data-count="100">100問</a>
+          </div>
+          <a href="/quiz/?mode=weak&count=10" class="p-select-card__btn js-weak-start-btn" id="js-weak-start">
+            問題を解く
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        {% else %}
+          <p class="p-select-card__note" style="margin-top: 16px;">
+            ※ 苦手問題機能はログインが必要です。
+          </p>
+          <a href="/accounts/login/" class="p-select-card__btn" style="background-color: var(--color-text-muted);">
+            ログインしてから使う
+          </a>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // --- Random Card: Count button selection ---
+    const randomCountBtns = document.querySelectorAll('#js-random-counts .js-count-btn');
+    const randomStartBtn = document.getElementById('js-random-start');
+
+    randomCountBtns.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        randomCountBtns.forEach(b => b.classList.remove('is-active'));
+        this.classList.add('is-active');
+        const count = this.getAttribute('data-count');
+        if (randomStartBtn) {
+          randomStartBtn.href = `/quiz/?count=${count}`;
+        }
+      });
+    });
+
+    // --- Category Card: Category button selection ---
+    const categoryBtns = document.querySelectorAll('.js-category-btn');
+    const categoryStartBtn = document.getElementById('js-category-start');
+
+    categoryBtns.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        categoryBtns.forEach(b => b.classList.remove('is-active'));
+        this.classList.add('is-active');
+        const url = this.getAttribute('data-url');
+        if (categoryStartBtn) {
+          categoryStartBtn.href = url;
+        }
+      });
+    });
+
+    // --- Weak Card: Count button selection ---
+    const weakCountBtns = document.querySelectorAll('#js-weak-counts .js-weak-count-btn');
+    const weakStartBtn = document.getElementById('js-weak-start');
+
+    weakCountBtns.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        weakCountBtns.forEach(b => b.classList.remove('is-active'));
+        this.classList.add('is-active');
+        const count = this.getAttribute('data-count');
+        if (weakStartBtn) {
+          weakStartBtn.href = `/quiz/?mode=weak&count=${count}`;
+        }
+      });
+    });
+
+    // Set first count button as default active
+    const firstRandom = document.querySelector('#js-random-counts .js-count-btn');
+    if (firstRandom) firstRandom.classList.add('is-active');
+
+    const firstWeak = document.querySelector('#js-weak-counts .js-weak-count-btn');
+    if (firstWeak) firstWeak.classList.add('is-active');
+
+    // Set first category button active
+    const firstCategory = document.querySelector('.js-category-btn');
+    if (firstCategory) firstCategory.classList.add('is-active');
+  });
+</script>
+{% endblock %}

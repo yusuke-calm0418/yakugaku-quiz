@@ -5,6 +5,20 @@ import random
 def question_view(request):
     result = None
     is_correct = None
+    selected = []
+
+    # ブックマーク切り替え処理（Ajax / フォーム）
+    if request.GET.get('action') == 'toggle_bookmark':
+        b_id = request.GET.get('question_id')
+        if b_id:
+            bookmarks = request.session.get('bookmarks', [])
+            b_id_int = int(b_id) if b_id.isdigit() else b_id
+            if b_id_int in bookmarks:
+                bookmarks.remove(b_id_int)
+            else:
+                bookmarks.append(b_id_int)
+            request.session['bookmarks'] = bookmarks
+            request.session.modified = True
 
     # =========================
     # POST（回答処理）
@@ -13,7 +27,7 @@ def question_view(request):
         question_id = request.POST.get('question_id')
         question = get_object_or_404(Question, id=question_id)
 
-        # 🔥 複数選択対応
+        # 複数選択対応
         selected = request.POST.getlist('choice')  # ['1','3'] など
 
         # 正解データ（文字列→リスト化）
@@ -22,18 +36,23 @@ def question_view(request):
         # 正誤判定（順不同対応）
         is_correct = sorted(selected) == sorted(correct_answers)
 
-        # 履歴保存（文字列で保存）
-        Answer.objects.create(
-            user=request.user,
-            question=question,
-            selected="".join(selected),  # '13'みたいに保存
-            is_correct=is_correct
-        )
+        # 履歴保存（ログイン時のみ）
+        if request.user.is_authenticated:
+            Answer.objects.create(
+                user=request.user,
+                question=question,
+                selected="".join(selected),
+                is_correct=is_correct
+            )
 
         result = "正解！" if is_correct else "不正解..."
 
         # 同じ問題回避
         request.session['last_question_id'] = question.id
+
+        # 進捗インクリメント
+        quiz_progress = request.session.get('quiz_progress_index', 1)
+        request.session['quiz_progress_index'] = quiz_progress + 1
 
     # =========================
     # GET（問題取得）
@@ -71,7 +90,10 @@ def question_view(request):
 
             # 分野フィルター
             if category:
-                questions = questions.filter(category=category)
+                if category in ['physics', 'chemistry', 'biology']:
+                    questions = questions.filter(category='physics_chemistry_biology')
+                else:
+                    questions = questions.filter(category=category)
 
             # 必須 / 一般フィルター
             if q_type:
@@ -88,8 +110,11 @@ def question_view(request):
 
             question = random.choice(list(questions))
 
+    if not question:
+        return render(request, 'quiz/question.html', {'question': None})
+
     # =========================
-    # 正答率
+    # 正答率 & 進捗 & ブックマーク
     # =========================
     accuracy = 0
     if request.user.is_authenticated:
@@ -98,13 +123,77 @@ def question_view(request):
         correct = answers.filter(is_correct=True).count()
         accuracy = int((correct / total) * 100) if total > 0 else 0
 
+    bookmarks = request.session.get('bookmarks', [])
+    is_bookmarked = question.id in bookmarks
+
+    # 進捗管理（指定された問題数またはデフォルト30問）
+    if request.GET.get('count'):
+        try:
+            total_quiz_count = int(request.GET.get('count'))
+            request.session['quiz_total_count'] = total_quiz_count
+            request.session['quiz_progress_index'] = 1
+        except ValueError:
+            total_quiz_count = request.session.get('quiz_total_count', 30)
+    else:
+        total_quiz_count = request.session.get('quiz_total_count', 30)
+
+    progress_index = request.session.get('quiz_progress_index', 1)
+    progress_percent = min(int((progress_index / total_quiz_count) * 100), 100)
+
+    # カテゴリ表示名マッピング
+    category_display_dict = dict(Question.CATEGORY_CHOICES)
+    category_name = category_display_dict.get(question.category, '国家試験問題')
+
+    # 選択肢リスト
+    choices_list = [
+        {'num': '1', 'text': question.choice1},
+        {'num': '2', 'text': question.choice2},
+        {'num': '3', 'text': question.choice3},
+        {'num': '4', 'text': question.choice4},
+    ]
+
+    # 正解・選択のテキストリスト
+    correct_choices_data = [c for c in choices_list if c['num'] in list(question.correct)]
+    selected_choices_data = [c for c in choices_list if c['num'] in selected]
+
     return render(request, 'quiz/question.html', {
         'question': question,
         'result': result,
         'is_correct': is_correct,
-        'correct_answer': question.correct,
-        'accuracy': accuracy
+        'correct_answer': list(question.correct),
+        'selected_answers': selected,
+        'choices_list': choices_list,
+        'correct_choices_data': correct_choices_data,
+        'selected_choices_data': selected_choices_data,
+        'accuracy': accuracy,
+        'is_bookmarked': is_bookmarked,
+        'progress_index': progress_index,
+        'total_quiz_count': total_quiz_count,
+        'progress_percent': progress_percent,
+        'category_name': category_name,
     })
+
+
+def question_select_view(request):
+    """
+    問題・モード選択画面 (screenshots/question-select.png)
+    """
+    categories = [
+        {'code': 'physics', 'name': '物理'},
+        {'code': 'chemistry', 'name': '化学'},
+        {'code': 'biology', 'name': '生物'},
+        {'code': 'hygiene', 'name': '衛生'},
+        {'code': 'pharmacology', 'name': '薬理'},
+        {'code': 'pharmaceutics', 'name': '薬剤'},
+        {'code': 'pathology', 'name': '病態・薬物治療'},
+        {'code': 'law_ethics', 'name': '法規・制度・倫理'},
+        {'code': 'practice', 'name': '実務'},
+    ]
+
+    return render(request, 'quiz/question_select.html', {
+        'categories': categories,
+    })
+
 
 
 def question_list_view(request):

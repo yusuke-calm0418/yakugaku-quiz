@@ -21,112 +21,112 @@
 <a href="/quiz/?question_type=general">一般問題</a>
 
 {% if question %}
-  <p>{{ question.text }}</p>
+<p>{{ question.text }}</p>
 
-  <form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="question_id" value="{{ question.id }}">
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="question_id" value="{{ question.id }}">
 
-    <!-- ===================== -->
-    <!-- 単一選択（必須問題） -->
-    <!-- ===================== -->
-    {% if question.question_type == 'required' %}
-      <input type="radio" name="choice" value="1" {% if result %}disabled{% endif %}>
-        {{ question.choice1 }}
-      </input><br>
+  <!-- ===================== -->
+  <!-- 単一選択（必須問題） -->
+  <!-- ===================== -->
+  {% if question.question_type == 'required' %}
+  <input type="radio" name="choice" value="1" {% if result %}disabled{% endif %}>
+  {{ question.choice1 }}
+  </input><br>
 
-      <input type="radio" name="choice" value="2" {% if result %}disabled{% endif %}>
-        {{ question.choice2 }}
-      </input><br>
+  <input type="radio" name="choice" value="2" {% if result %}disabled{% endif %}>
+  {{ question.choice2 }}
+  </input><br>
 
-      <input type="radio" name="choice" value="3" {% if result %}disabled{% endif %}>
-        {{ question.choice3 }}
-      </input><br>
+  <input type="radio" name="choice" value="3" {% if result %}disabled{% endif %}>
+  {{ question.choice3 }}
+  </input><br>
 
-      <input type="radio" name="choice" value="4" {% if result %}disabled{% endif %}>
-        {{ question.choice4 }}
-      </input><br>
-      <button type="submit" {% if result %}disabled{% endif %}>
-        回答する
-      </button>
+  <input type="radio" name="choice" value="4" {% if result %}disabled{% endif %}>
+  {{ question.choice4 }}
+  </input><br>
+  <button type="submit" {% if result %}disabled{% endif %}>
+    回答する
+  </button>
 
-    <!-- ===================== -->
-    <!-- 複数選択（一般問題） -->
-    <!-- ===================== -->
-    {% else %}
-      <label>
-        <input type="checkbox" name="choice" value="1" class="multi-choice" {% if result %}disabled{% endif %}>
-        {{ question.choice1 }}
-      </label><br>
+  <!-- ===================== -->
+  <!-- 複数選択（一般問題） -->
+  <!-- ===================== -->
+  {% else %}
+  <label>
+    <input type="checkbox" name="choice" value="1" class="multi-choice" {% if result %}disabled{% endif %}>
+    {{ question.choice1 }}
+  </label><br>
 
-      <label>
-        <input type="checkbox" name="choice" value="2" class="multi-choice" {% if result %}disabled{% endif %}>
-        {{ question.choice2 }}
-      </label><br>
+  <label>
+    <input type="checkbox" name="choice" value="2" class="multi-choice" {% if result %}disabled{% endif %}>
+    {{ question.choice2 }}
+  </label><br>
 
-      <label>
-        <input type="checkbox" name="choice" value="3" class="multi-choice" {% if result %}disabled{% endif %}>
-        {{ question.choice3 }}
-      </label><br>
+  <label>
+    <input type="checkbox" name="choice" value="3" class="multi-choice" {% if result %}disabled{% endif %}>
+    {{ question.choice3 }}
+  </label><br>
 
-      <label>
-        <input type="checkbox" name="choice" value="4"class="multi-choice" {% if result %}disabled{% endif %}>
-        {{ question.choice4 }}
-      </label><br>
-      <button type="submit" {% if result %}disabled{% endif %}>
-        回答する
-      </button>
-      <script>
-        const checkboxes = document.querySelectorAll('.multi-choice');
+  <label>
+    <input type="checkbox" name="choice" value="4" class="multi-choice" {% if result %}disabled{% endif %}>
+    {{ question.choice4 }}
+  </label><br>
+  <button type="submit" {% if result %}disabled{% endif %}>
+    回答する
+  </button>
+  <script>
+    const checkboxes = document.querySelectorAll('.multi-choice');
 
-        checkboxes.forEach(box => {
-          box.addEventListener('change', () => {
-            const checked = document.querySelectorAll('.multi-choice:checked');
+    checkboxes.forEach(box => {
+      box.addEventListener('change', () => {
+        const checked = document.querySelectorAll('.multi-choice:checked');
 
-            if (checked.length > 2) {
-              box.checked = false;
-              alert('2つまでしか選択できません');
-            }
-          });
-        });
-      </script>
+        if (checked.length > 2) {
+          box.checked = false;
+          alert('2つまでしか選択できません');
+        }
+      });
+    });
+  </script>
 
-    {% endif %}
-
-  </form>
-
-  <!-- 正答率 -->
-  <p>正答率：{{ accuracy }}%</p>
-
-  {% if result %}
-    <h2>{{ result }}</h2>
-
-    {% if is_correct %}
-      <p style="color: green;">正解です！</p>
-    {% else %}
-      <p style="color: red;">残念！</p>
-
-      <!-- 🔥複数対応の正解表示 -->
-      <p>正解は：
-        {% for c in correct_answer %}
-          {% if c == "1" %}{{ question.choice1 }}{% endif %}
-          {% if c == "2" %}{{ question.choice2 }}{% endif %}
-          {% if c == "3" %}{{ question.choice3 }}{% endif %}
-          {% if c == "4" %}{{ question.choice4 }}{% endif %}
-        {% endfor %}
-      </p>
-    {% endif %}
-
-    <h3>解説</h3>
-    <p>{{ question.explanation }}</p>
-
-    <form method="get">
-      <button type="submit">次の問題へ</button>
-    </form>
   {% endif %}
 
+</form>
+
+<!-- 正答率 -->
+<p>正答率：{{ accuracy }}%</p>
+
+{% if result %}
+<h2>{{ result }}</h2>
+
+{% if is_correct %}
+<p style="color: green;">正解です！</p>
 {% else %}
-  <p>問題がありません</p>
+<p style="color: red;">残念！</p>
+
+<!-- 🔥複数対応の正解表示 -->
+<p>正解は：
+  {% for c in correct_answer %}
+  {% if c == "1" %}{{ question.choice1 }}{% endif %}
+  {% if c == "2" %}{{ question.choice2 }}{% endif %}
+  {% if c == "3" %}{{ question.choice3 }}{% endif %}
+  {% if c == "4" %}{{ question.choice4 }}{% endif %}
+  {% endfor %}
+</p>
+{% endif %}
+
+<h3>解説</h3>
+<p>{{ question.explanation }}</p>
+
+<form method="get">
+  <button type="submit">次の問題へ</button>
+</form>
+{% endif %}
+
+{% else %}
+<p>問題がありません</p>
 {% endif %}
 
 <!-- トップ -->

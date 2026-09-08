@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from accounts.views import home, mypage, signup
-from quiz.views import question_view, question_list_view
+from quiz.views import question_view, question_list_view, question_select_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +26,7 @@ urlpatterns = [
     
     # クイズ画面
     path('quiz/', question_view),
+    path('quiz/select/', question_select_view, name='question_select'),
     # 問題集一覧画面
     path('questions/', question_list_view, name='question_list'),
 

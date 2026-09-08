@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}問題集一覧 | 薬学生のための薬剤師国家試験対策問題集{% endblock %}
+
+{% block content %}
+<div class="p-page-header">
+  <div class="l-container">
+    <h1 class="p-page-header__title">問題集一覧</h1>
+  </div>
+</div>
+
+<div class="l-container">
+  <!-- Tab Navigation -->
+  <div class="p-tabs">
+    <a href="?tab=category{% if current_category != 'all' %}&category={{ current_category }}{% endif %}" 
+       class="p-tabs__item {% if tab == 'category' %}is-active{% endif %}">
+      分野別
+    </a>
+    <a href="?tab=weak" 
+       class="p-tabs__item {% if tab == 'weak' %}is-active{% endif %}">
+      苦手一覧
+    </a>
+    <a href="?tab=bookmark" 
+       class="p-tabs__item {% if tab == 'bookmark' %}is-active{% endif %}">
+      ブックマーク
+    </a>
+  </div>
+
+  <!-- Main Content Card -->
+  <div class="p-question-list-card">
+    {% if tab == 'category' %}
+      <!-- Category Filter Buttons -->
+      <div class="p-filter-group">
+        {% for cat in categories %}
+          <a href="?tab=category&category={{ cat.code }}" 
+             class="p-filter-btn {% if current_category == cat.code %}is-active{% endif %}">
+            {{ cat.name }}
+          </a>
+        {% endfor %}
+      </div>
+    {% elif tab == 'weak' %}
+      <div style="margin-bottom: 24px;">
+        <p style="color: var(--color-text-muted); font-size: 15px;">
+          過去に2回以上解答し、正答率が50%未満の問題を表示しています。
+          {% if not user.is_authenticated %}
+            <br><span style="color: var(--color-red);">※ 苦手問題の自動記録にはログインが必要です。</span>
+          {% endif %}
+        </p>
+      </div>
+    {% elif tab == 'bookmark' %}
+      <div style="margin-bottom: 24px;">
+        <p style="color: var(--color-text-muted); font-size: 15px;">
+          ブックマークに保存した問題の一覧です。
+        </p>
+      </div>
+    {% endif %}
+
+    <!-- Questions List -->
+    <div class="p-question-list">
+      {% if page_obj %}
+        {% for q in page_obj %}
+          <a href="/quiz/?question_id={{ q.id }}" class="p-question-item">
+            <div class="p-question-item__left">
+              <span class="p-question-item__text">{{ q.text }}</span>
+            </div>
+            <div class="p-question-item__arrow">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </a>
+        {% endfor %}
+      {% else %}
+        <div class="p-question-empty">
+          <svg class="p-question-empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <p>該当する問題は見つかりませんでした。</p>
+          {% if tab == 'category' and current_category != 'all' %}
+            <div style="margin-top: 16px;">
+              <a href="?tab=category&category=all" class="c-btn c-btn--outline c-btn--sm">すべての問題を表示</a>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+      <div class="p-pagination">
+        {% if page_obj.has_previous %}
+          <a href="?tab={{ tab }}&category={{ current_category }}&page={{ page_obj.previous_page_number }}" class="p-pagination__link">
+            &laquo;
+          </a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <span class="p-pagination__link is-current">{{ num }}</span>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?tab={{ tab }}&category={{ current_category }}&page={{ num }}" class="p-pagination__link">
+              {{ num }}
+            </a>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <a href="?tab={{ tab }}&category={{ current_category }}&page={{ page_obj.next_page_number }}" class="p-pagination__link">
+            &raquo;
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

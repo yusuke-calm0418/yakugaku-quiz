@@ -1,23 +1,194 @@
-<h1>薬剤師国家試験対策クイズ</h1>
+{% extends 'base.html' %}
+{% load static %}
 
-<p>
-スキマ時間で学べるクイズ形式の学習サービスです。
-</p>
+{% block title %}薬学生のための薬剤師国家試験対策問題集 | TOP{% endblock %}
 
-{% if user.is_authenticated %}
-  <p>こんにちは {{ user.username }} さん</p>
-
-  <a href="/quiz/">クイズを始める</a><br>
-  <a href="/mypage/">マイページ</a><br>
-
-  <form action="/accounts/logout/" method="post">
-    {% csrf_token %}
-    <button type="submit">ログアウト</button>
-  </form>
-
-{% else %}
-  <a href="/accounts/login/">ログイン</a>
-  <div class="">
-    <a href="/accounts/signup/">新規登録</a>
+{% block content %}
+<!-- =========================================================================
+     Hero Section (First View)
+     ========================================================================= -->
+<section class="p-hero">
+  <div class="l-container p-hero__inner">
+    <div class="p-hero__content">
+      <h1 class="p-hero__title">
+        <span class="p-hero__title-accent">薬学生</span>のための<br>
+        薬剤師国家試験<br>
+        対策問題集
+      </h1>
+      <p class="p-hero__lead">
+        1200問以上の厳選問題を収録。<br>
+        スキマ時間を活用して、効率的に実力を伸ばそう！
+      </p>
+      <div>
+        <a href="/quiz/" class="c-btn c-btn--primary">
+          <span>早速問題を解いてみる</span>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+    </div>
+    <div class="p-hero__visual">
+      <img src="{% static 'images/fv_pc.png' %}" alt="薬学生向けオンラインクイズ学習画面と勉強アイテム" class="p-hero__img" width="620" height="420">
+    </div>
   </div>
+</section>
+
+<!-- =========================================================================
+     About Section (薬学クイズサイトとは？ & 問題プレビュー)
+     ========================================================================= -->
+<section class="p-about section--lg">
+  <div class="l-container">
+    <div class="p-about__grid">
+      <!-- Left: Introduction Text Card -->
+      <div class="p-about__desc-card">
+        <div>
+          <h2 class="p-about__title">薬学クイズサイトとは？</h2>
+          <p class="p-about__text">
+            薬剤師国家試験の合格を目指す薬学生のためのオンライン学習サービスです。<br><br>
+            1200問以上の厳選問題とわかりやすい解説で、効率的な学習をサポートします。<br><br>
+            無料で登録して、今日からあなたも学習をスマートに！
+          </p>
+        </div>
+        <div class="p-about__action">
+          <a href="/quiz/" class="c-btn c-btn--primary">
+            <span>早速問題を解いてみる</span>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right: Interactive Sample Quiz Card -->
+      <div class="p-about__preview-wrap">
+        <div class="p-quiz-card" id="js-sample-quiz">
+          <div class="p-quiz-card__header">
+            <div class="p-quiz-card__tags">
+              <span class="c-badge c-badge--sub">必須問題</span>
+              <span class="c-badge c-badge--sub">薬理</span>
+            </div>
+            <div class="p-quiz-card__number">問題例プレビュー</div>
+          </div>
+
+          <p class="p-quiz-card__text">
+            問. 強心配糖体（ジゴキシン等）の主な作用機序として正しいのはどれか。1つ選べ。
+          </p>
+
+          <div class="p-quiz-card__choices">
+            <div class="p-quiz-card__choice-item" data-choice="1" data-correct="true">
+              <span class="p-quiz-card__choice-badge">1</span>
+              <span>心筋のNa<sup>+</sup>/K<sup>+</sup>-ATPaseを阻害する</span>
+            </div>
+            <div class="p-quiz-card__choice-item" data-choice="2" data-correct="false">
+              <span class="p-quiz-card__choice-badge">2</span>
+              <span>心筋のβ<sub>1</sub>受容体を直接刺激する</span>
+            </div>
+            <div class="p-quiz-card__choice-item" data-choice="3" data-correct="false">
+              <span class="p-quiz-card__choice-badge">3</span>
+              <span>血管平滑筋のCa<sup>2+</sup>チャネルを遮断する</span>
+            </div>
+            <div class="p-quiz-card__choice-item" data-choice="4" data-correct="false">
+              <span class="p-quiz-card__choice-badge">4</span>
+              <span>アンジオテンシン変換酵素（ACE）を阻害する</span>
+            </div>
+          </div>
+
+          <div class="p-quiz-card__feedback" id="js-quiz-feedback" style="display: none;">
+            <div class="p-quiz-card__explanation-box">
+              <strong id="js-feedback-title"></strong>
+              <p>【解説】<br>ジギタリス製剤（ジゴキシン）は心筋細胞膜のNa<sup>+</sup>/K<sup>+</sup>-ATPaseを特異的に阻害し、細胞内Na<sup>+</sup>濃度を上昇させます。これによりNa<sup>+</sup>-Ca<sup>2+</sup>交換系を介して細胞内Ca<sup>2+</sup>濃度が高まり、陽性変力作用（心筋収縮力増強）を示します。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     News Section (お知らせ)
+     ========================================================================= -->
+<section class="p-news section--lg" id="news">
+  <div class="l-container l-container--narrow">
+    <h2 class="c-heading-2">お知らせ</h2>
+
+    <div class="p-news__list">
+      <article class="p-news__item">
+        <time class="p-news__date" datetime="2026-07-26">2026.07.26</time>
+        <div class="p-news__badge-wrap">
+          <span class="c-badge">お知らせ</span>
+        </div>
+        <a href="#news" class="p-news__title-link">第110回薬剤師国家試験対策の新問題を100問追加しました</a>
+      </article>
+
+      <article class="p-news__item">
+        <time class="p-news__date" datetime="2026-07-26">2026.07.26</time>
+        <div class="p-news__badge-wrap">
+          <span class="c-badge">お知らせ</span>
+        </div>
+        <a href="#news" class="p-news__title-link">タイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトル</a>
+      </article>
+
+      <article class="p-news__item">
+        <time class="p-news__date" datetime="2026-07-26">2026.07.26</time>
+        <div class="p-news__badge-wrap">
+          <span class="c-badge">お知らせ</span>
+        </div>
+        <a href="#news" class="p-news__title-link">タイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトル</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     CTA Bottom Section
+     ========================================================================= -->
+{% if not user.is_authenticated %}
+<section class="p-cta">
+  <div class="l-container p-cta__inner">
+    <h3 class="p-cta__heading">今すぐ無料登録して学習をスタート！</h3>
+    <p class="p-cta__text">苦手問題の自動分析や分野別演習で、国家試験合格への最短ルートを進みましょう。</p>
+    <div style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
+      <a href="/accounts/signup/" class="c-btn c-btn--primary">新規会員登録（無料）</a>
+      <a href="/quiz/" class="c-btn c-btn--outline">まずはクイズを体験する</a>
+    </div>
+  </div>
+</section>
 {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Interactive sample quiz preview in About section
+    const choiceItems = document.querySelectorAll('#js-sample-quiz .p-quiz-card__choice-item');
+    const feedbackBox = document.getElementById('js-quiz-feedback');
+    const feedbackTitle = document.getElementById('js-feedback-title');
+
+    choiceItems.forEach(item => {
+      item.addEventListener('click', function() {
+        choiceItems.forEach(i => i.classList.remove('is-selected', 'is-correct-answer'));
+        
+        const isCorrect = this.getAttribute('data-correct') === 'true';
+        this.classList.add(isCorrect ? 'is-correct-answer' : 'is-selected');
+
+        if (feedbackBox && feedbackTitle) {
+          feedbackBox.style.display = 'block';
+          if (isCorrect) {
+            feedbackTitle.innerHTML = '🎉 正解です！';
+            feedbackTitle.style.color = 'var(--color-main)';
+          } else {
+            feedbackTitle.innerHTML = '❌ 残念！ 正解は 1 です。';
+            feedbackTitle.style.color = 'var(--color-red)';
+            const correctItem = document.querySelector('#js-sample-quiz [data-correct="true"]');
+            if (correctItem) correctItem.classList.add('is-correct-answer');
+          }
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}

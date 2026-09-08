@@ -1,0 +1,98 @@
+// ==========================================================================
+// yakugaku-quiz - SCSS Stylesheet
+// Based on .agent/rules/design.md
+// ==========================================================================
+
+// Colors
+$color-main: #39A378;
+$color-main-hover: #2e8662;
+$color-bg: #F1F3F9;
+$color-bg-white: #FFFFFF;
+$color-text: #19273B;
+$color-text-muted: #64748B;
+$color-red: #DC716C;
+$color-yellow: #F4AA6D;
+$color-line: #CDD9EA;
+$color-bg-sub: #E7F4F0;
+
+// Typography
+$font-family-base: "Noto Sans JP", sans-serif;
+$font-size-body: 16px;
+
+$font-size-heading-1: 44px;
+$font-size-heading-1-tablet: 36px;
+$font-size-heading-1-mobile: 28px;
+
+$font-size-heading-2: 32px;
+$font-size-heading-2-tablet: 28px;
+$font-size-heading-2-mobile: 24px;
+
+$line-height-base: 1.8;
+
+// Layout
+$container-width: 1200px;
+$container-width-narrow: 1000px;
+
+// Side Padding
+$side-padding: 24px;
+$side-padding-mobile: 16px;
+
+// Section Spacing
+$section-space-lg: 100px;
+$section-space-sm: 50px;
+
+$section-space-lg-tablet: 80px;
+$section-space-sm-tablet: 40px;
+
+$section-space-lg-mobile: 60px;
+$section-space-sm-mobile: 32px;
+
+// Breakpoints
+$breakpoint-tablet: 1023px;
+$breakpoint-mobile: 767px;
+
+// Base styles
+body {
+  font-family: $font-family-base;
+  font-size: $font-size-body;
+  line-height: $line-height-base;
+  color: $color-text;
+  background-color: $color-bg;
+}
+
+h2 {
+  font-size: $font-size-heading-2;
+  line-height: $line-height-base;
+
+  @media (max-width: $breakpoint-tablet) {
+    font-size: $font-size-heading-2-tablet;
+  }
+
+  @media (max-width: $breakpoint-mobile) {
+    font-size: $font-size-heading-2-mobile;
+  }
+}
+
+.l-container {
+  width: 100%;
+  max-width: $container-width;
+  margin-inline: auto;
+  padding-inline: $side-padding;
+  box-sizing: border-box;
+
+  @media (max-width: $breakpoint-mobile) {
+    padding-inline: $side-padding-mobile;
+  }
+}
+
+.l-container--narrow {
+  width: 100%;
+  max-width: $container-width-narrow;
+  margin-inline: auto;
+  padding-inline: $side-padding;
+  box-sizing: border-box;
+
+  @media (max-width: $breakpoint-mobile) {
+    padding-inline: $side-padding-mobile;
+  }
+}

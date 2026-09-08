@@ -39,61 +39,64 @@ def question_view(request):
     # GET（問題取得）
     # =========================
     else:
+        specific_id = request.GET.get('question_id')
         mode = request.GET.get('mode')
         category = request.GET.get('category')
-        q_type = request.GET.get('type')  # 🔥 必須/一般
+        q_type = request.GET.get('type')  # 必須/一般
 
-        # 苦手モード
-        if mode == 'weak':
-            from django.db.models import Count, Q
-
-            stats = Answer.objects.filter(user=request.user).values('question').annotate(
-                total=Count('id'),
-                correct=Count('id', filter=Q(is_correct=True))
-            )
-
-            weak_ids = []
-
-            for s in stats:
-                accuracy = s['correct'] / s['total']
-                if s['total'] >= 2 and accuracy < 0.5:
-                    weak_ids.append(s['question'])
-
-            questions = Question.objects.filter(id__in=weak_ids)
-
+        if specific_id:
+            question = Question.objects.filter(id=specific_id).first()
         else:
-            questions = Question.objects.all()
+            # 苦手モード
+            if mode == 'weak':
+                from django.db.models import Count, Q
 
-        # 分野フィルター
-        if category:
-            questions = questions.filter(category=category)
+                if request.user.is_authenticated:
+                    stats = Answer.objects.filter(user=request.user).values('question').annotate(
+                        total=Count('id'),
+                        correct=Count('id', filter=Q(is_correct=True))
+                    )
 
-        # 必須 / 一般フィルター
-        if q_type:
-            questions = questions.filter(question_type=q_type)
+                    weak_ids = []
+                    for s in stats:
+                        accuracy = s['correct'] / s['total']
+                        if s['total'] >= 2 and accuracy < 0.5:
+                            weak_ids.append(s['question'])
 
-        # 問題なし対策
-        if not questions:
-            return render(request, 'quiz/question.html', {'question': None})
+                    questions = Question.objects.filter(id__in=weak_ids)
+                else:
+                    questions = Question.objects.none()
+            else:
+                questions = Question.objects.all()
 
-        # 同じ問題回避
-        last_id = request.session.get('last_question_id')
-        if last_id:
-            questions = questions.exclude(id=last_id)
+            # 分野フィルター
+            if category:
+                questions = questions.filter(category=category)
 
-        if not questions:
-            questions = Question.objects.all()
+            # 必須 / 一般フィルター
+            if q_type:
+                questions = questions.filter(question_type=q_type)
 
-        question = random.choice(list(questions))
+            # 問題なし対策
+            if not questions.exists():
+                return render(request, 'quiz/question.html', {'question': None})
+
+            # 同じ問題回避
+            last_id = request.session.get('last_question_id')
+            if last_id and questions.count() > 1:
+                questions = questions.exclude(id=last_id)
+
+            question = random.choice(list(questions))
 
     # =========================
     # 正答率
     # =========================
-    answers = Answer.objects.filter(user=request.user)
-    total = answers.count()
-    correct = answers.filter(is_correct=True).count()
-
-    accuracy = int((correct / total) * 100) if total > 0 else 0
+    accuracy = 0
+    if request.user.is_authenticated:
+        answers = Answer.objects.filter(user=request.user)
+        total = answers.count()
+        correct = answers.filter(is_correct=True).count()
+        accuracy = int((correct / total) * 100) if total > 0 else 0
 
     return render(request, 'quiz/question.html', {
         'question': question,
@@ -102,5 +105,77 @@ def question_view(request):
         'correct_answer': question.correct,
         'accuracy': accuracy
     })
+
+
+def question_list_view(request):
+    """
+    問題集一覧ビュー: 分野別 / 苦手一覧 / ブックマーク対応
+    """
+    from django.core.paginator import Paginator
+    from django.db.models import Count, Q
+
+    tab = request.GET.get('tab', 'category')
+    category = request.GET.get('category', 'all')
+
+    questions_qs = Question.objects.all().order_id_asc() if hasattr(Question.objects, 'order_id_asc') else Question.objects.all().order_by('id')
+
+    # タブごとの分岐
+    if tab == 'weak':
+        if request.user.is_authenticated:
+            stats = Answer.objects.filter(user=request.user).values('question').annotate(
+                total=Count('id'),
+                correct=Count('id', filter=Q(is_correct=True))
+            )
+            weak_ids = [
+                s['question'] for s in stats 
+                if s['total'] >= 2 and (s['correct'] / s['total']) < 0.5
+            ]
+            questions_qs = questions_qs.filter(id__in=weak_ids)
+        else:
+            questions_qs = Question.objects.none()
+
+    elif tab == 'bookmark':
+        bookmarks = request.session.get('bookmarks', [])
+        questions_qs = questions_qs.filter(id__in=bookmarks)
+
+    else:
+        # 分野別フィルター
+        if category and category != 'all':
+            if category in ['physics', 'chemistry', 'biology']:
+                # 物理・化学・生物
+                questions_qs = questions_qs.filter(
+                    Q(category='physics_chemistry_biology') |
+                    Q(category=category)
+                )
+            else:
+                questions_qs = questions_qs.filter(category=category)
+
+    # ページネーション
+    paginator = Paginator(questions_qs, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # カテゴリ定義一覧
+    categories = [
+        {'code': 'physics', 'name': '物理'},
+        {'code': 'chemistry', 'name': '化学'},
+        {'code': 'biology', 'name': '生物'},
+        {'code': 'hygiene', 'name': '衛生'},
+        {'code': 'pharmacology', 'name': '薬理'},
+        {'code': 'pharmaceutics', 'name': '薬剤'},
+        {'code': 'pathology', 'name': '病態・薬物治療'},
+        {'code': 'law_ethics', 'name': '法規・制度・倫理'},
+        {'code': 'practice', 'name': '実務'},
+        {'code': 'all', 'name': '全て'},
+    ]
+
+    return render(request, 'quiz/question_list.html', {
+        'page_obj': page_obj,
+        'tab': tab,
+        'current_category': category,
+        'categories': categories,
+        'total_count': questions_qs.count(),
+    })
+
     
     

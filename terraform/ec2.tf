@@ -25,7 +25,6 @@ resource "aws_instance" "web" {
   subnet_id                   = aws_subnet.public_1a.id
   vpc_security_group_ids      = [aws_security_group.ec2.id]
   key_name                    = var.ec2_key_name != "" ? var.ec2_key_name : null
-  associate_public_ip_address = true
 
   # ルートストレージ (20GB gp3)
   root_block_device {

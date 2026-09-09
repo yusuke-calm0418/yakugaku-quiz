@@ -1,4 +1,6 @@
 from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse, Http404
+from urllib.parse import urlencode
 from .models import Question, Answer
 import random
 
@@ -7,52 +9,63 @@ def question_view(request):
     is_correct = None
     selected = []
 
-    # ブックマーク切り替え処理（Ajax / フォーム）
-    if request.GET.get('action') == 'toggle_bookmark':
-        b_id = request.GET.get('question_id')
-        if b_id:
-            bookmarks = request.session.get('bookmarks', [])
-            b_id_int = int(b_id) if b_id.isdigit() else b_id
-            if b_id_int in bookmarks:
-                bookmarks.remove(b_id_int)
-            else:
-                bookmarks.append(b_id_int)
-            request.session['bookmarks'] = bookmarks
-            request.session.modified = True
+    error = None
+    if request.method == 'POST' and request.POST.get('action') == 'toggle_bookmark':
+        question_id = request.POST.get('question_id', '')
+        if not question_id.isdecimal():
+            raise Http404
+        question = get_object_or_404(Question, pk=question_id)
+        bookmarks = request.session.get('bookmarks', [])
+        if question.pk in bookmarks:
+            bookmarks.remove(question.pk)
+        else:
+            bookmarks.append(question.pk)
+        request.session['bookmarks'] = bookmarks
+        return JsonResponse({'bookmarked': question.pk in bookmarks})
 
     # =========================
     # POST（回答処理）
     # =========================
     if request.method == 'POST':
-        question_id = request.POST.get('question_id')
+        question_id = request.POST.get('question_id', '')
+        if not question_id.isdecimal():
+            raise Http404
         question = get_object_or_404(Question, id=question_id)
 
         # 複数選択対応
         selected = request.POST.getlist('choice')  # ['1','3'] など
 
-        # 正解データ（文字列→リスト化）
-        correct_answers = list(question.correct)  # '13' → ['1','3']
+        limit = 1 if question.question_type == 'required' else 2
+        if (
+            not selected or len(selected) > limit
+            or len(set(selected)) != len(selected)
+            or any(value not in ('1', '2', '3', '4') for value in selected)
+        ):
+            error = '選択肢を1つ選んでください。' if limit == 1 else '選択肢を1つまたは2つ選んでください。'
+        else:
+            # 正解データ（文字列→リスト化）
+            correct_answers = list(question.correct)  # '13' → ['1','3']
 
-        # 正誤判定（順不同対応）
-        is_correct = sorted(selected) == sorted(correct_answers)
+            # 正誤判定（順不同対応）
+            is_correct = sorted(selected) == sorted(correct_answers)
 
-        # 履歴保存（ログイン時のみ）
-        if request.user.is_authenticated:
-            Answer.objects.create(
-                user=request.user,
-                question=question,
-                selected="".join(selected),
-                is_correct=is_correct
-            )
+            # 履歴保存（ログイン時のみ）
+            if request.user.is_authenticated:
+                Answer.objects.create(
+                    user=request.user,
+                    question=question,
+                    selected="".join(selected),
+                    is_correct=is_correct
+                )
 
-        result = "正解！" if is_correct else "不正解..."
+            result = "正解！" if is_correct else "不正解..."
 
-        # 同じ問題回避
-        request.session['last_question_id'] = question.id
+            # 同じ問題回避
+            request.session['last_question_id'] = question.id
 
-        # 進捗インクリメント
-        quiz_progress = request.session.get('quiz_progress_index', 1)
-        request.session['quiz_progress_index'] = quiz_progress + 1
+            # 進捗インクリメント
+            quiz_progress = request.session.get('quiz_progress_index', 1)
+            request.session['quiz_progress_index'] = quiz_progress + 1
 
     # =========================
     # GET（問題取得）
@@ -61,9 +74,11 @@ def question_view(request):
         specific_id = request.GET.get('question_id')
         mode = request.GET.get('mode')
         category = request.GET.get('category')
-        q_type = request.GET.get('type')  # 必須/一般
+        q_type = request.GET.get('type') or request.GET.get('question_type')  # 必須/一般
 
         if specific_id:
+            if not specific_id.isdecimal():
+                raise Http404
             question = Question.objects.filter(id=specific_id).first()
         else:
             # 苦手モード
@@ -127,9 +142,9 @@ def question_view(request):
     is_bookmarked = question.id in bookmarks
 
     # 進捗管理（指定された問題数またはデフォルト30問）
-    if request.GET.get('count'):
+    if request.method == 'GET' and request.GET.get('count'):
         try:
-            total_quiz_count = int(request.GET.get('count'))
+            total_quiz_count = max(1, min(int(request.GET.get('count')), 100))
             request.session['quiz_total_count'] = total_quiz_count
             request.session['quiz_progress_index'] = 1
         except ValueError:
@@ -137,8 +152,13 @@ def question_view(request):
     else:
         total_quiz_count = request.session.get('quiz_total_count', 30)
 
-    progress_index = request.session.get('quiz_progress_index', 1)
+    progress_index = min(request.session.get('quiz_progress_index', 1) - (1 if result else 0), total_quiz_count)
     progress_percent = min(int((progress_index / total_quiz_count) * 100), 100)
+
+    filters = {key: request.GET[key] for key in ('mode', 'category', 'type', 'question_type') if request.GET.get(key)}
+    next_url = '/quiz/?' + urlencode(filters)
+    retry_url = '/quiz/?' + urlencode({**filters, 'question_id': question.pk})
+    request.session['last_question_id'] = question.pk
 
     # カテゴリ表示名マッピング
     category_display_dict = dict(Question.CATEGORY_CHOICES)
@@ -158,6 +178,10 @@ def question_view(request):
 
     return render(request, 'quiz/question.html', {
         'question': question,
+        'error': error,
+        'next_url': next_url,
+        'retry_url': retry_url,
+        'complete': bool(result) and progress_index >= total_quiz_count,
         'result': result,
         'is_correct': is_correct,
         'correct_answer': list(question.correct),

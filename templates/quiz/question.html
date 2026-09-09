@@ -1,133 +1,46 @@
-<h1>クイズ</h1>
-
-<!-- モード -->
-<a href="/quiz/">通常モード</a> |
-<a href="/quiz/?mode=weak">苦手問題モード</a>
-
-<h3>分野選択</h3>
-
-<a href="/quiz/">すべて</a> |
-<a href="/quiz/?category=physics_chemistry_biology">物理・化学・生物</a> |
-<a href="/quiz/?category=hygiene">衛生</a> |
-<a href="/quiz/?category=pharmacology">薬理</a> |
-<a href="/quiz/?category=pharmaceutics">薬剤</a> |
-<a href="/quiz/?category=pathology">病態・薬物治療</a> |
-<a href="/quiz/?category=law_ethics">法規・制度・倫理</a> |
-<a href="/quiz/?category=practice">実務</a>
-
-<h3>問題種別</h3>
-<a href="/quiz/">すべて</a> |
-<a href="/quiz/?question_type=required">必須問題</a> |
-<a href="/quiz/?question_type=general">一般問題</a>
-
-{% if question %}
-<p>{{ question.text }}</p>
-
-<form method="post">
-  {% csrf_token %}
-  <input type="hidden" name="question_id" value="{{ question.id }}">
-
-  <!-- ===================== -->
-  <!-- 単一選択（必須問題） -->
-  <!-- ===================== -->
-  {% if question.question_type == 'required' %}
-  <input type="radio" name="choice" value="1" {% if result %}disabled{% endif %}>
-  {{ question.choice1 }}
-  </input><br>
-
-  <input type="radio" name="choice" value="2" {% if result %}disabled{% endif %}>
-  {{ question.choice2 }}
-  </input><br>
-
-  <input type="radio" name="choice" value="3" {% if result %}disabled{% endif %}>
-  {{ question.choice3 }}
-  </input><br>
-
-  <input type="radio" name="choice" value="4" {% if result %}disabled{% endif %}>
-  {{ question.choice4 }}
-  </input><br>
-  <button type="submit" {% if result %}disabled{% endif %}>
-    回答する
-  </button>
-
-  <!-- ===================== -->
-  <!-- 複数選択（一般問題） -->
-  <!-- ===================== -->
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}問題演習 | 薬剤師国家試験対策{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'styles/quiz.css' %}">{% endblock %}
+{% block content %}
+<div class="quiz-page l-container--narrow">
+  <div class="quiz-heading"><div><p class="quiz-eyebrow">PRACTICE</p><h1>問題演習</h1></div><a href="{% url 'question_select' %}">問題・モードを選び直す →</a></div>
+  {% if question %}
+  <div class="quiz-meta"><div><strong>{{ progress_index }} / {{ total_quiz_count }} 問</strong><progress value="{{ progress_percent }}" max="100" aria-label="演習の進捗">{{ progress_percent }}%</progress></div><span>{% if user.is_authenticated %}通算正答率 <strong>{{ accuracy }}%</strong>{% else %}<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログインして学習を記録</a>{% endif %}</span></div>
+  <article class="quiz-card">
+    <div class="quiz-tags"><span>{{ category_name }}</span><span>{{ question.get_question_type_display }}</span><span>問題 {{ question.id }}</span></div>
+    <h2 class="quiz-question" id="question-title">{{ question.text|linebreaksbr }}</h2>
+    <form method="post" id="quiz-answer-form">
+      {% csrf_token %}<input type="hidden" name="question_id" value="{{ question.id }}">
+      <fieldset class="quiz-choices" {% if result %}disabled{% endif %} aria-describedby="choice-help">
+        <legend id="choice-help">{% if question.question_type == 'required' %}正しい選択肢を1つ選んでください。{% else %}正しい選択肢を選んでください（最大2つ）。{% endif %}</legend>
+        {% for choice in choices_list %}
+        <label class="quiz-choice {% if result and choice.num in correct_answer %}is-correct{% elif result and choice.num in selected_answers %}is-wrong{% endif %}">
+          <input type="{% if question.question_type == 'required' %}radio{% else %}checkbox{% endif %}" name="choice" value="{{ choice.num }}" {% if choice.num in selected_answers %}checked{% endif %} {% if question.question_type == 'required' %}required{% endif %}>
+          <span class="quiz-choice-number">{{ choice.num }}</span><span class="quiz-choice-text">{{ choice.text }}</span>
+          {% if result and choice.num in correct_answer %}<span class="quiz-choice-status">正解</span>{% elif result and choice.num in selected_answers %}<span class="quiz-choice-status">あなたの回答</span>{% endif %}
+        </label>
+        {% endfor %}
+      </fieldset>
+      <p class="quiz-error" id="choice-error" role="alert">{{ error|default:'' }}</p>
+      {% if not result %}<div class="quiz-actions"><a href="{{ next_url }}">この問題をスキップ</a><button type="submit" class="c-btn c-btn--primary">回答する</button></div>{% endif %}
+    </form>
+    {% if result %}
+    <section class="quiz-result {% if not is_correct %}quiz-result--wrong{% endif %}" aria-labelledby="result-title">
+      <h2 id="result-title">{% if is_correct %}○ 正解！{% else %}× 不正解{% endif %}</h2>
+      <div class="quiz-result-answers"><div><h3>あなたの回答</h3>{% for choice in selected_choices_data %}<p>{{ choice.num }}. {{ choice.text }}</p>{% endfor %}</div><div><h3>正解</h3>{% for choice in correct_choices_data %}<p>{{ choice.num }}. {{ choice.text }}</p>{% endfor %}</div></div>
+      <h3>解説</h3><div class="quiz-explanation">{{ question.explanation|linebreaksbr }}</div>
+    </section>
+    {% if complete %}<p class="quiz-finished" role="status">{{ total_quiz_count }}問の演習が完了しました。おつかれさまでした！</p>{% endif %}
+    {% endif %}
+    <div class="quiz-actions quiz-bottom">
+      <form method="post" id="quiz-bookmark-form">{% csrf_token %}<input type="hidden" name="question_id" value="{{ question.id }}"><input type="hidden" name="action" value="toggle_bookmark"><button type="submit" class="quiz-bookmark" aria-pressed="{{ is_bookmarked|yesno:'true,false' }}">{% if is_bookmarked %}★ ブックマーク済み{% else %}☆ ブックマーク{% endif %}</button><span id="bookmark-status" role="status"></span></form>
+      {% if result %}<a class="c-btn c-btn--outline" href="{{ retry_url }}">もう一度解く</a>{% if complete %}<a class="c-btn c-btn--primary" href="{% url 'question_select' %}">次の演習を選ぶ →</a>{% else %}<a class="c-btn c-btn--primary" href="{{ next_url }}">次の問題へ →</a>{% endif %}{% endif %}
+    </div>
+  </article>
   {% else %}
-  <label>
-    <input type="checkbox" name="choice" value="1" class="multi-choice" {% if result %}disabled{% endif %}>
-    {{ question.choice1 }}
-  </label><br>
-
-  <label>
-    <input type="checkbox" name="choice" value="2" class="multi-choice" {% if result %}disabled{% endif %}>
-    {{ question.choice2 }}
-  </label><br>
-
-  <label>
-    <input type="checkbox" name="choice" value="3" class="multi-choice" {% if result %}disabled{% endif %}>
-    {{ question.choice3 }}
-  </label><br>
-
-  <label>
-    <input type="checkbox" name="choice" value="4" class="multi-choice" {% if result %}disabled{% endif %}>
-    {{ question.choice4 }}
-  </label><br>
-  <button type="submit" {% if result %}disabled{% endif %}>
-    回答する
-  </button>
-  <script>
-    const checkboxes = document.querySelectorAll('.multi-choice');
-
-    checkboxes.forEach(box => {
-      box.addEventListener('change', () => {
-        const checked = document.querySelectorAll('.multi-choice:checked');
-
-        if (checked.length > 2) {
-          box.checked = false;
-          alert('2つまでしか選択できません');
-        }
-      });
-    });
-  </script>
-
+  <div class="quiz-card quiz-empty"><h2>出題できる問題がありません</h2><p>選択した条件に合う問題がないか、苦手問題がまだありません。<br>科目やモードを変更してお試しください。</p><a class="c-btn c-btn--primary" href="{% url 'question_select' %}">問題・モードを選ぶ</a></div>
   {% endif %}
-
-</form>
-
-<!-- 正答率 -->
-<p>正答率：{{ accuracy }}%</p>
-
-{% if result %}
-<h2>{{ result }}</h2>
-
-{% if is_correct %}
-<p style="color: green;">正解です！</p>
-{% else %}
-<p style="color: red;">残念！</p>
-
-<!-- 🔥複数対応の正解表示 -->
-<p>正解は：
-  {% for c in correct_answer %}
-  {% if c == "1" %}{{ question.choice1 }}{% endif %}
-  {% if c == "2" %}{{ question.choice2 }}{% endif %}
-  {% if c == "3" %}{{ question.choice3 }}{% endif %}
-  {% if c == "4" %}{{ question.choice4 }}{% endif %}
-  {% endfor %}
-</p>
-{% endif %}
-
-<h3>解説</h3>
-<p>{{ question.explanation }}</p>
-
-<form method="get">
-  <button type="submit">次の問題へ</button>
-</form>
-{% endif %}
-
-{% else %}
-<p>問題がありません</p>
-{% endif %}
-
-<!-- トップ -->
-<a href="/">トップに戻る</a>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/quiz.js' %}" defer></script>{% endblock %}

@@ -34,7 +34,10 @@
     <aside class="mypage-sidebar" aria-label="学習メニュー">
       <section class="mypage-card mypage-review"><p class="mypage-eyebrow">REVIEW</p><h2>苦手を、得意に。</h2><p>復習対象の問題</p><div class="mypage-number">{{ weak_count }}<small>問</small></div><p class="mypage-note">2回以上回答し、正答率が50%未満の問題です。</p>{% if weak_count %}<a class="c-btn c-btn--primary" href="/quiz/?mode=weak">苦手問題を復習する →</a>{% else %}<p>{% if total %}現在、復習対象の問題はありません。{% else %}問題を解くと、復習が必要な問題を確認できます。{% endif %}</p>{% endif %}</section>
       <section class="mypage-card"><h2>学習メニュー</h2><nav class="mypage-shortcuts" aria-label="学習へのリンク"><a href="{% url 'question_select' %}">問題・モードを選ぶ <span>→</span></a><a href="{% url 'question_list' %}">問題一覧を見る <span>→</span></a><a href="{% url 'question_list' %}?tab=weak">苦手問題を確認する <span>→</span></a></nav></section>
-      <section class="mypage-card"><h2>お知らせ</h2><p class="mypage-note">サービスの更新情報はこちらからご確認ください。</p><a class="mypage-link" href="{% url 'home' %}#news">お知らせを見る →</a></section>
+      <section class="mypage-card"><h2>お知らせ</h2>
+        <div class="mypage-shortcuts">{% for news in latest_news %}<a href="{{ news.get_absolute_url }}"><div><time class="mypage-note" datetime="{{ news.published_at|date:'c' }}">{{ news.published_at|date:'Y.m.d' }}</time><br>{{ news.title }}</div><span>→</span></a>{% empty %}<p class="mypage-note">現在、お知らせはありません。</p>{% endfor %}</div>
+        <a class="mypage-link" href="{% url 'news_list' %}">お知らせ一覧を見る →</a>
+      </section>
     </aside>
   </div>
 </div>

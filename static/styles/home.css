@@ -1,0 +1,11 @@
+.p-news__action {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+@media (max-width: 767px) {
+  .p-news__action {
+    margin-top: 24px;
+  }
+}

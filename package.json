@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "sass": "sass static/scss/header.scss:static/styles/header.css static/scss/auth.scss:static/styles/auth.css static/scss/home.scss:static/styles/home.css static/scss/mypage.scss:static/styles/mypage.css static/scss/quiz.scss:static/styles/quiz.css static/scss/news.scss:static/styles/news.css --no-source-map",
+    "sass:watch": "sass --watch static/scss/header.scss:static/styles/header.css static/scss/auth.scss:static/styles/auth.css static/scss/home.scss:static/styles/home.css static/scss/mypage.scss:static/styles/mypage.css static/scss/quiz.scss:static/styles/quiz.css static/scss/news.scss:static/styles/news.css --no-source-map --poll"
+  },
+  "devDependencies": {
+    "sass": "1.83.4"
+  }
+}

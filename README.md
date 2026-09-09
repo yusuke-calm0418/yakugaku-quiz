@@ -123,3 +123,12 @@ docker compose exec web python manage.py test
 
 - 開発用設定のため `DEBUG=True` です。
 - メール送信はコンソールバックエンドを使用しているため、パスワードリセットメールはコンテナログに出力されます。
+
+## お知らせの投稿
+
+1. `python manage.py migrate` を実行（Dockerでは `docker compose exec web python manage.py migrate`）。
+2. 管理画面 `/admin/` の「お知らせ」から記事を追加。
+3. タイトル・本文・公開日時を入力し、「公開する」をチェックして保存。
+
+チェックを外すと下書き、未来の公開日時を指定すると予約公開になります。
+本文はプレーンテキストです。公開済みの記事は `/news/`、トップ、マイページに表示されます。

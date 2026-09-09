@@ -1,58 +1,278 @@
-/* Generated from static/scss/mypage.scss. */
+.mypage {
+  padding-block: 50px;
+  color: #19273B;
+}
 
-.mypage { padding-block: 50px; color: #19273B; }
-.mypage-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 50px; }
-.mypage-heading h1 { font-size: 32px; margin: 4px 0 8px; }
-.mypage-heading p { margin: 0; }
-.mypage-eyebrow { color: #39A378; font-size: 12px; font-weight: 700; letter-spacing: .15em; }
-.mypage-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 32px; align-items: start; }
-.mypage-main, .mypage-sidebar { display: grid; gap: 32px; min-width: 0; }
-.mypage-card, .mypage-stat { background: #FFFFFF; border-radius: 12px; padding: 32px; min-width: 0; }
-.mypage-card h2 { font-size: 22px; margin: 0 0 20px; }
-.mypage-profile { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 16px; margin: 0 0 24px; }
-.mypage-profile dt { font-weight: 700; }
-.mypage-profile dd { margin: 0; overflow-wrap: anywhere; }
-.mypage-link, .mypage-subject a { color: #39A378; text-underline-offset: 4px; }
-.mypage a:focus-visible { outline: 3px solid #39A378; outline-offset: 4px; }
-.mypage-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.mypage-stat { text-align: center; padding: 24px 16px; }
-.mypage-stat h2 { color: #39A378; font-size: 18px; border-bottom: 1px solid #CDD9EA; padding-bottom: 12px; margin: 0 0 12px; }
-.mypage-stat p, .mypage-stat > span { font-size: 12px; margin: 0; }
-.mypage-number { font-size: clamp(32px, 4vw, 52px); color: #39A378; font-weight: 700; line-height: 1.4; margin: 16px 0; overflow-wrap: anywhere; }
-.mypage-number small { font-size: 22px; margin-left: 4px; }
-.mypage-note { font-size: 13px; margin: 8px 0 0; }
-.mypage-subjects { margin-top: 24px; }
-.mypage-subject { display: grid; grid-template-columns: 145px minmax(0, 1fr); align-items: center; gap: 20px; padding-block: 18px; border-bottom: 1px solid #CDD9EA; }
-.mypage-subject:last-child { border-bottom: 0; padding-bottom: 0; }
-.mypage-subject > a { font-weight: 700; font-size: 14px; color: #19273B; }
-.mypage-progress { display: flex; align-items: center; gap: 12px; }
-.mypage-progress strong { min-width: 3.5em; font-size: 14px; text-align: right; }
-.mypage-progress progress { display: block; width: 100%; min-width: 0; height: 8px; border: 0; border-radius: 8px; overflow: hidden; appearance: none; background: #CDD9EA; color: #39A378; }
-.mypage-progress progress::-webkit-progress-bar { background: #CDD9EA; border-radius: 8px; }
-.mypage-progress progress::-webkit-progress-value { background: #39A378; border-radius: 8px; }
-.mypage-progress progress::-moz-progress-bar { background: #39A378; border-radius: 8px; }
-.mypage-empty { background: #E7F4F0; padding: 16px; border-radius: 8px; margin-top: 24px; font-size: 14px; }
-.mypage-review { background: #E7F4F0; }
-.mypage-review .c-btn { width: 100%; margin-top: 24px; font-size: 14px; }
-.mypage-shortcuts { display: grid; }
-.mypage-shortcuts a { display: flex; justify-content: space-between; gap: 12px; padding-block: 16px; border-bottom: 1px solid #CDD9EA; color: #19273B; font-size: 14px; }
-.mypage-shortcuts a:last-child { border: 0; padding-bottom: 0; }
-.mypage-shortcuts span { color: #39A378; }
+.mypage-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 50px;
+}
+
+.mypage-heading h1 {
+  font-size: 32px;
+  margin: 4px 0 8px;
+}
+
+.mypage-heading p {
+  margin: 0;
+}
+
+.mypage-eyebrow {
+  color: #39A378;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.mypage-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.mypage-main, .mypage-sidebar {
+  display: grid;
+  gap: 32px;
+  min-width: 0;
+}
+
+.mypage-card, .mypage-stat {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 32px;
+  min-width: 0;
+}
+
+.mypage-card h2 {
+  font-size: 22px;
+  margin: 0 0 20px;
+}
+
+.mypage-profile {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 16px;
+  margin: 0 0 24px;
+}
+
+.mypage-profile dt {
+  font-weight: 700;
+}
+
+.mypage-profile dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.mypage-link, .mypage-subject a {
+  color: #39A378;
+  text-underline-offset: 4px;
+}
+
+.mypage a:focus-visible {
+  outline: 3px solid #39A378;
+  outline-offset: 4px;
+}
+
+.mypage-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.mypage-stat {
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.mypage-stat h2 {
+  color: #39A378;
+  font-size: 18px;
+  border-bottom: 1px solid #CDD9EA;
+  padding-bottom: 12px;
+  margin: 0 0 12px;
+}
+
+.mypage-stat p, .mypage-stat > span {
+  font-size: 12px;
+  margin: 0;
+}
+
+.mypage-number {
+  font-size: clamp(32px, 4vw, 52px);
+  color: #39A378;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 16px 0;
+  overflow-wrap: anywhere;
+}
+
+.mypage-number small {
+  font-size: 22px;
+  margin-left: 4px;
+}
+
+.mypage-note {
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+.mypage-subjects {
+  margin-top: 24px;
+}
+
+.mypage-subject {
+  display: grid;
+  grid-template-columns: 145px minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+  padding-block: 18px;
+  border-bottom: 1px solid #CDD9EA;
+}
+
+.mypage-subject:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.mypage-subject > a {
+  font-weight: 700;
+  font-size: 14px;
+  color: #19273B;
+}
+
+.mypage-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mypage-progress strong {
+  min-width: 3.5em;
+  font-size: 14px;
+  text-align: right;
+}
+
+.mypage-progress progress {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 8px;
+  border: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  appearance: none;
+  background: #CDD9EA;
+  color: #39A378;
+}
+
+.mypage-progress progress::-webkit-progress-bar {
+  background: #CDD9EA;
+  border-radius: 8px;
+}
+
+.mypage-progress progress::-webkit-progress-value {
+  background: #39A378;
+  border-radius: 8px;
+}
+
+.mypage-progress progress::-moz-progress-bar {
+  background: #39A378;
+  border-radius: 8px;
+}
+
+.mypage-empty {
+  background: #E7F4F0;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 24px;
+  font-size: 14px;
+}
+
+.mypage-review {
+  background: #E7F4F0;
+}
+
+.mypage-review .c-btn {
+  width: 100%;
+  margin-top: 24px;
+  font-size: 14px;
+}
+
+.mypage-shortcuts {
+  display: grid;
+}
+
+.mypage-shortcuts a {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 16px;
+  border-bottom: 1px solid #CDD9EA;
+  color: #19273B;
+  font-size: 14px;
+}
+
+.mypage-shortcuts a:last-child {
+  border: 0;
+  padding-bottom: 0;
+}
+
+.mypage-shortcuts span {
+  color: #39A378;
+}
+
 @media (max-width: 1023px) {
-  .mypage { padding-block: 40px; }
-  .mypage-heading { margin-bottom: 40px; }
-  .mypage-layout { grid-template-columns: 1fr; }
-  .mypage-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mypage {
+    padding-block: 40px;
+  }
+  .mypage-heading {
+    margin-bottom: 40px;
+  }
+  .mypage-layout {
+    grid-template-columns: 1fr;
+  }
+  .mypage-sidebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 767px) {
-  .mypage { padding-block: 32px; }
-  .mypage-heading { align-items: stretch; flex-direction: column; margin-bottom: 32px; }
-  .mypage-heading h1 { font-size: 24px; }
-  .mypage-card { padding: 24px 20px; }
-  .mypage-card h2 { font-size: 20px; }
-  .mypage-stats, .mypage-sidebar { grid-template-columns: 1fr; }
-  .mypage-profile { grid-template-columns: 1fr; gap: 4px; }
-  .mypage-profile dd + dt { margin-top: 16px; }
-  .mypage-subject { grid-template-columns: 1fr; gap: 8px; }
-  .mypage-number { font-size: 44px; }
+  .mypage {
+    padding-block: 32px;
+  }
+  .mypage-heading {
+    align-items: stretch;
+    flex-direction: column;
+    margin-bottom: 32px;
+  }
+  .mypage-heading h1 {
+    font-size: 24px;
+  }
+  .mypage-card {
+    padding: 24px 20px;
+  }
+  .mypage-card h2 {
+    font-size: 20px;
+  }
+  .mypage-stats, .mypage-sidebar {
+    grid-template-columns: 1fr;
+  }
+  .mypage-profile {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .mypage-profile dd + dt {
+    margin-top: 16px;
+  }
+  .mypage-subject {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .mypage-number {
+    font-size: 44px;
+  }
 }

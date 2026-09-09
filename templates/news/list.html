@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}お知らせ | 薬剤師国家試験対策{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'styles/news.css' %}">{% endblock %}
+{% block content %}
+<div class="news-page l-container--narrow">
+  <header class="news-heading"><p>NEWS</p><h1>お知らせ</h1></header>
+  <div class="news-card">
+    {% for news in page_obj %}
+    <article class="news-row"><time datetime="{{ news.published_at|date:'c' }}">{{ news.published_at|date:'Y.m.d' }}</time><span class="news-badge">お知らせ</span><h2><a href="{{ news.get_absolute_url }}">{{ news.title }}</a></h2><span aria-hidden="true">→</span></article>
+    {% empty %}<div class="news-empty"><h2>現在、お知らせはありません</h2><p>サービスの更新情報やメンテナンス情報を、こちらでお届けします。</p></div>{% endfor %}
+  </div>
+  {% if page_obj.has_other_pages %}<nav class="news-pagination" aria-label="お知らせのページ切り替え">{% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">← 前へ</a>{% endif %}<span aria-current="page">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }} ページ</span>{% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">次へ →</a>{% endif %}</nav>{% endif %}
+</div>
+{% endblock %}

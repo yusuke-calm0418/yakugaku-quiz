@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ news.title }} | お知らせ{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'styles/news.css' %}">{% endblock %}
+{% block content %}
+<div class="news-page l-container--narrow">
+  <nav class="news-breadcrumb" aria-label="パンくず"><a href="{% url 'home' %}">トップ</a><span aria-hidden="true"> / </span><a href="{% url 'news_list' %}">お知らせ</a></nav>
+  <article class="news-card news-detail"><header><div class="news-meta"><time datetime="{{ news.published_at|date:'c' }}">{{ news.published_at|date:'Y.m.d' }}</time><span class="news-badge">お知らせ</span></div><h1>{{ news.title }}</h1></header><div class="news-body">{{ news.body|linebreaksbr }}</div></article>
+  <div class="news-back"><a class="c-btn c-btn--outline" href="{% url 'news_list' %}">← お知らせ一覧へ戻る</a></div>
+</div>
+{% endblock %}

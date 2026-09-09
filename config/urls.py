@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from accounts.views import home, mypage, signup
+from accounts.views import home, mypage, signup, news_list, news_detail
 from quiz.views import question_view, question_list_view, question_select_view
 
 urlpatterns = [
@@ -34,6 +34,9 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/signup/', signup, name='signup'),
     
+    path('news/', news_list, name='news_list'),
+    path('news/<int:pk>/', news_detail, name='news_detail'),
+
     # マイページ
     path('mypage/', mypage, name='mypage'),
 ]

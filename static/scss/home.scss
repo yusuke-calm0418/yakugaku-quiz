@@ -1,0 +1,13 @@
+$breakpoint-mobile: 767px;
+
+.p-news__action {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+@media (max-width: $breakpoint-mobile) {
+  .p-news__action {
+    margin-top: 24px;
+  }
+}

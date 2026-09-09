@@ -3,6 +3,10 @@
 
 {% block title %}薬学生のための薬剤師国家試験対策問題集 | TOP{% endblock %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'styles/home.css' %}">
+{% endblock %}
+
 {% block content %}
 <!-- =========================================================================
      Hero Section (First View)
@@ -22,7 +26,8 @@
       <div>
         <a href="/quiz/select/" class="c-btn c-btn--primary">
           <span>早速問題を解いてみる</span>
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
           </svg>
@@ -30,7 +35,8 @@
       </div>
     </div>
     <div class="p-hero__visual">
-      <img src="{% static 'images/fv_pc.png' %}" alt="薬学生向けオンラインクイズ学習画面と勉強アイテム" class="p-hero__img" width="620" height="420">
+      <img src="{% static 'images/fv_pc.png' %}" alt="薬学生向けオンラインクイズ学習画面と勉強アイテム" class="p-hero__img" width="620"
+        height="420">
     </div>
   </div>
 </section>
@@ -54,7 +60,8 @@
         <div class="p-about__action">
           <a href="/quiz/select/" class="c-btn c-btn--primary">
             <span>早速問題を解いてみる</span>
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
@@ -99,7 +106,9 @@
           <div class="p-quiz-card__feedback" id="js-quiz-feedback" style="display: none;">
             <div class="p-quiz-card__explanation-box">
               <strong id="js-feedback-title"></strong>
-              <p>【解説】<br>ジギタリス製剤（ジゴキシン）は心筋細胞膜のNa<sup>+</sup>/K<sup>+</sup>-ATPaseを特異的に阻害し、細胞内Na<sup>+</sup>濃度を上昇させます。これによりNa<sup>+</sup>-Ca<sup>2+</sup>交換系を介して細胞内Ca<sup>2+</sup>濃度が高まり、陽性変力作用（心筋収縮力増強）を示します。</p>
+              <p>
+                【解説】<br>ジギタリス製剤（ジゴキシン）は心筋細胞膜のNa<sup>+</sup>/K<sup>+</sup>-ATPaseを特異的に阻害し、細胞内Na<sup>+</sup>濃度を上昇させます。これによりNa<sup>+</sup>-Ca<sup>2+</sup>交換系を介して細胞内Ca<sup>2+</sup>濃度が高まり、陽性変力作用（心筋収縮力増強）を示します。
+              </p>
             </div>
           </div>
         </div>
@@ -116,29 +125,17 @@
     <h2 class="c-heading-2">お知らせ</h2>
 
     <div class="p-news__list">
+      {% for news in latest_news %}
       <article class="p-news__item">
-        <time class="p-news__date" datetime="2026-07-26">2026.07.26</time>
-        <div class="p-news__badge-wrap">
-          <span class="c-badge">お知らせ</span>
-        </div>
-        <a href="#news" class="p-news__title-link">第110回薬剤師国家試験対策の新問題を100問追加しました</a>
+        <time class="p-news__date"
+          datetime="{{ news.published_at|date:'c' }}">{{ news.published_at|date:'Y.m.d' }}</time>
+        <div class="p-news__badge-wrap"><span class="c-badge">お知らせ</span></div>
+        <a href="{{ news.get_absolute_url }}" class="p-news__title-link">{{ news.title }}</a>
       </article>
-
-      <article class="p-news__item">
-        <time class="p-news__date" datetime="2026-07-26">2026.07.26</time>
-        <div class="p-news__badge-wrap">
-          <span class="c-badge">お知らせ</span>
-        </div>
-        <a href="#news" class="p-news__title-link">タイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトル</a>
-      </article>
-
-      <article class="p-news__item">
-        <time class="p-news__date" datetime="2026-07-26">2026.07.26</time>
-        <div class="p-news__badge-wrap">
-          <span class="c-badge">お知らせ</span>
-        </div>
-        <a href="#news" class="p-news__title-link">タイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトルタイトル</a>
-      </article>
+      {% empty %}<p>現在、お知らせはありません。</p>{% endfor %}
+    </div>
+    <div class="p-news__action">
+      <a href="{% url 'news_list' %}" class="c-btn c-btn--outline">お知らせ一覧を見る →</a>
     </div>
   </div>
 </section>
@@ -162,16 +159,16 @@
 
 {% block extra_js %}
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     // Interactive sample quiz preview in About section
     const choiceItems = document.querySelectorAll('#js-sample-quiz .p-quiz-card__choice-item');
     const feedbackBox = document.getElementById('js-quiz-feedback');
     const feedbackTitle = document.getElementById('js-feedback-title');
 
     choiceItems.forEach(item => {
-      item.addEventListener('click', function() {
+      item.addEventListener('click', function () {
         choiceItems.forEach(i => i.classList.remove('is-selected', 'is-correct-answer'));
-        
+
         const isCorrect = this.getAttribute('data-correct') === 'true';
         this.classList.add(isCorrect ? 'is-correct-answer' : 'is-selected');
 

@@ -161,3 +161,61 @@ class MyPageTests(TestCase):
             self.assertEqual(learning_summary(self.user)['streak'], 3)
         with patch('django.utils.timezone.now', return_value=datetime(2026, 9, 12, tzinfo=timezone.utc)):
             self.assertEqual(learning_summary(self.user)['streak'], 0)
+
+
+class NewsTests(TestCase):
+    def setUp(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        from .models import News
+        self.public = News.objects.create(title='公開のお知らせ', body='本文\n次の行<script>alert(1)</script>',
+            is_published=True, published_at=timezone.now() - timedelta(days=1))
+        self.draft = News.objects.create(title='下書きのお知らせ', body='非公開')
+        self.future = News.objects.create(title='予約のお知らせ', body='予約', is_published=True,
+            published_at=timezone.now() + timedelta(days=1))
+
+    def test_public_pages_hide_drafts_and_scheduled_news(self):
+        user = get_user_model().objects.create_user(username='reader')
+        self.client.force_login(user)
+        for url in ('/', reverse('news_list'), reverse('mypage')):
+            response = self.client.get(url)
+            self.assertContains(response, self.public.title)
+            self.assertNotContains(response, self.draft.title)
+            self.assertNotContains(response, self.future.title)
+        self.client.logout()
+        response = self.client.get(self.public.get_absolute_url())
+        self.assertContains(response, '次の行&lt;script&gt;')
+        self.assertNotContains(response, '<script>alert(1)</script>')
+        for news in (self.draft, self.future):
+            self.assertEqual(self.client.get(news.get_absolute_url()).status_code, 404)
+
+    def test_publication_time_boundary(self):
+        from unittest.mock import patch
+        with patch('django.utils.timezone.now', return_value=self.future.published_at):
+            self.assertContains(self.client.get(reverse('news_list')), self.future.title)
+            self.assertEqual(self.client.get(self.future.get_absolute_url()).status_code, 200)
+
+    def test_pagination_latest_and_empty_state(self):
+        from .models import News
+        from django.utils import timezone
+        for index in range(12):
+            News.objects.create(title=f'追加{index}', body='本文', is_published=True)
+        response = self.client.get(reverse('news_list'))
+        self.assertEqual(len(response.context['page_obj']), 10)
+        self.assertEqual(response.context['page_obj'].paginator.count, 13)
+        self.assertEqual(len(self.client.get(reverse('news_list')+'?page=2').context['page_obj']), 3)
+        self.assertEqual(len(self.client.get('/').context['latest_news']), 3)
+        self.assertEqual(self.client.get(reverse('news_list')+'?page=bad').status_code, 200)
+        News.objects.update(is_published=False)
+        self.assertContains(self.client.get(reverse('news_list')), '現在、お知らせはありません')
+
+    def test_admin_requires_staff_and_can_create_draft(self):
+        url = reverse('admin:accounts_news_add')
+        self.assertEqual(self.client.get(url).status_code, 302)
+        user = get_user_model().objects.create_superuser(username='editor', password='Editor-123!')
+        self.client.force_login(user)
+        response = self.client.post(url, {'title': '管理画面から投稿', 'body': '本文',
+            'published_at_0': '2026-09-09', 'published_at_1': '12:00:00', '_save': '保存'})
+        self.assertEqual(response.status_code, 302)
+        from .models import News
+        self.assertFalse(News.objects.get(title='管理画面から投稿').is_published)

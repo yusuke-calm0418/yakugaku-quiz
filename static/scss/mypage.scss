@@ -1,0 +1,68 @@
+$color-main: #39A378;
+$color-bg: #F1F3F9;
+$color-text: #19273B;
+$color-line: #CDD9EA;
+$color-bg-sub: #E7F4F0;
+$color-white: #FFFFFF;
+$breakpoint-tablet: 1023px;
+$breakpoint-mobile: 767px;
+$section-space-sm: 50px;
+$section-space-sm-tablet: 40px;
+$section-space-sm-mobile: 32px;
+
+.mypage { padding-block: $section-space-sm; color: $color-text; }
+.mypage-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: $section-space-sm; }
+.mypage-heading h1 { font-size: 32px; margin: 4px 0 8px; }
+.mypage-heading p { margin: 0; }
+.mypage-eyebrow { color: $color-main; font-size: 12px; font-weight: 700; letter-spacing: .15em; }
+.mypage-layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.mypage-main, .mypage-sidebar { display: grid; gap: 32px; min-width: 0; }
+.mypage-card, .mypage-stat { background: $color-white; border-radius: 12px; padding: 32px; min-width: 0; }
+.mypage-card h2 { font-size: 22px; margin: 0 0 20px; }
+.mypage-profile { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 16px; margin: 0 0 24px; }
+.mypage-profile dt { font-weight: 700; }
+.mypage-profile dd { margin: 0; overflow-wrap: anywhere; }
+.mypage-link, .mypage-subject a { color: $color-main; text-underline-offset: 4px; }
+.mypage a:focus-visible { outline: 3px solid $color-main; outline-offset: 4px; }
+.mypage-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.mypage-stat { text-align: center; padding: 24px 16px; }
+.mypage-stat h2 { color: $color-main; font-size: 18px; border-bottom: 1px solid $color-line; padding-bottom: 12px; margin: 0 0 12px; }
+.mypage-stat p, .mypage-stat > span { font-size: 12px; margin: 0; }
+.mypage-number { font-size: clamp(32px, 4vw, 52px); color: $color-main; font-weight: 700; line-height: 1.4; margin: 16px 0; overflow-wrap: anywhere; }
+.mypage-number small { font-size: 22px; margin-left: 4px; }
+.mypage-note { font-size: 13px; margin: 8px 0 0; }
+.mypage-subjects { margin-top: 24px; }
+.mypage-subject { display: grid; grid-template-columns: 145px minmax(0, 1fr); align-items: center; gap: 20px; padding-block: 18px; border-bottom: 1px solid $color-line; }
+.mypage-subject:last-child { border-bottom: 0; padding-bottom: 0; }
+.mypage-subject > a { font-weight: 700; font-size: 14px; color: $color-text; }
+.mypage-progress { display: flex; align-items: center; gap: 12px; }
+.mypage-progress strong { min-width: 3.5em; font-size: 14px; text-align: right; }
+.mypage-progress progress { display: block; width: 100%; min-width: 0; height: 8px; border: 0; border-radius: 8px; overflow: hidden; appearance: none; background: $color-line; color: $color-main; }
+.mypage-progress progress::-webkit-progress-bar { background: $color-line; border-radius: 8px; }
+.mypage-progress progress::-webkit-progress-value { background: $color-main; border-radius: 8px; }
+.mypage-progress progress::-moz-progress-bar { background: $color-main; border-radius: 8px; }
+.mypage-empty { background: $color-bg-sub; padding: 16px; border-radius: 8px; margin-top: 24px; font-size: 14px; }
+.mypage-review { background: $color-bg-sub; }
+.mypage-review .c-btn { width: 100%; margin-top: 24px; font-size: 14px; }
+.mypage-shortcuts { display: grid; }
+.mypage-shortcuts a { display: flex; justify-content: space-between; gap: 12px; padding-block: 16px; border-bottom: 1px solid $color-line; color: $color-text; font-size: 14px; }
+.mypage-shortcuts a:last-child { border: 0; padding-bottom: 0; }
+.mypage-shortcuts span { color: $color-main; }
+@media (max-width: $breakpoint-tablet) {
+  .mypage { padding-block: $section-space-sm-tablet; }
+  .mypage-heading { margin-bottom: $section-space-sm-tablet; }
+  .mypage-layout { grid-template-columns: 1fr; }
+  .mypage-sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: $breakpoint-mobile) {
+  .mypage { padding-block: $section-space-sm-mobile; }
+  .mypage-heading { align-items: stretch; flex-direction: column; margin-bottom: $section-space-sm-mobile; }
+  .mypage-heading h1 { font-size: 24px; }
+  .mypage-card { padding: 24px 20px; }
+  .mypage-card h2 { font-size: 20px; }
+  .mypage-stats, .mypage-sidebar { grid-template-columns: 1fr; }
+  .mypage-profile { grid-template-columns: 1fr; gap: 4px; }
+  .mypage-profile dd + dt { margin-top: 16px; }
+  .mypage-subject { grid-template-columns: 1fr; gap: 8px; }
+  .mypage-number { font-size: 44px; }
+}

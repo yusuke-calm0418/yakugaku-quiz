@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'styles/auth.css' %}">{% endblock %}
+{% block content %}
+<div class="auth-layout l-container">
+  <div class="auth-intro">
+    <p class="auth-eyebrow">薬剤師国家試験対策</p>
+    <h1>毎日の一問が、<br>合格への一歩に。</h1>
+    <p>スキマ時間に問題演習。<br>学習の積み重ねを、ここから始めましょう。</p>
+    <ul><li>分野ごとに問題を解いて理解を深める</li><li>回答履歴と正答率で学習の成果を確認</li><li>苦手な問題を繰り返して復習</li></ul>
+  </div>
+  <section class="auth-card" aria-labelledby="auth-title">
+    {% block auth_content %}{% endblock %}
+  </section>
+</div>
+{% endblock %}

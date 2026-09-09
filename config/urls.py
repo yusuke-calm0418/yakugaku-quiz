@@ -22,7 +22,7 @@ from quiz.views import question_view, question_list_view, question_select_view
 urlpatterns = [
     path('admin/', admin.site.urls),
     # トップページ
-    path('', home),
+    path('', home, name='home'),
     
     # クイズ画面
     path('quiz/', question_view),
@@ -32,8 +32,8 @@ urlpatterns = [
 
     # ログイン系
     path('accounts/', include('django.contrib.auth.urls')),
-    path('accounts/signup/', signup),
+    path('accounts/signup/', signup, name='signup'),
     
     # マイページ
-    path('mypage/', mypage),
+    path('mypage/', mypage, name='mypage'),
 ]

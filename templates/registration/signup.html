@@ -1,9 +1,12 @@
-<h1>新規登録</h1>
-
+{% extends 'registration/base.html' %}
+{% block title %}新規登録 | 薬剤師国家試験対策{% endblock %}
+{% block auth_content %}
+<h2 id="auth-title">新規登録</h2>
+<p class="auth-description">アカウントを作って、学習の記録を残しましょう。</p>
 <form method="post">
   {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">登録</button>
+  {% include 'registration/fields.html' %}
+  <button class="auth-submit" type="submit">アカウントを作成</button>
 </form>
-
-<a href="/accounts/login/">ログインはこちら</a>
+<div class="auth-footer"><p>すでにアカウントをお持ちの方</p><a href="{% url 'login' %}">ログインはこちら</a></div>
+{% endblock %}

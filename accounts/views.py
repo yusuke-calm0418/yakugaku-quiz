@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect
 from quiz.models import Answer
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .forms import SignupForm
 
 def home(request):
     return render(request, 'home.html')
 
+@login_required
 def mypage(request):
     answers = Answer.objects.filter(user=request.user)
 
@@ -34,12 +37,16 @@ def mypage(request):
     })
 
 def signup(request):
+    if request.user.is_authenticated:
+        return redirect('mypage')
+
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = SignupForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('/accounts/login/')
+            messages.success(request, '登録が完了しました。ユーザー名とパスワードでログインしてください。')
+            return redirect('login')
     else:
-        form = UserCreationForm()
+        form = SignupForm()
 
     return render(request, 'registration/signup.html', {'form': form})

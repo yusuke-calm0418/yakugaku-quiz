@@ -14,6 +14,7 @@
 
   <!-- CSS Stylesheet -->
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'styles/header.css' %}">
   {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -21,17 +22,11 @@
   <header class="l-header">
     <div class="l-container l-header__inner">
       <a href="/" class="l-header__logo" aria-label="トップページへ">
-        <svg class="l-header__logo-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12.5 7.5L7.5 12.5C4.2 15.8 4.2 21.2 7.5 24.5L15.5 32.5C18.8 35.8 24.2 35.8 27.5 32.5L32.5 27.5C35.8 24.2 35.8 18.8 32.5 15.5L24.5 7.5C21.2 4.2 15.8 4.2 12.5 7.5Z" fill="#E7F4F0" stroke="#39A378" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M14 20L20 14L26 20L20 26L14 20Z" fill="#39A378"/>
-          <path d="M9 19L21 7" stroke="#39A378" stroke-width="2.5" stroke-linecap="round"/>
-          <path d="M19 29L31 17" stroke="#39A378" stroke-width="2.5" stroke-linecap="round"/>
-        </svg>
-        <span>薬学生のための薬剤師国家試験対策問題集</span>
+        <img class="l-header__logo-image" src="{% static 'images/logo.png' %}" alt="薬学生のための薬剤師国家試験対策問題集" width="1014" height="136">
       </a>
 
       <!-- Mobile Hamburger Button -->
-      <button class="l-header__hamburger" id="js-hamburger" aria-label="メニューを開閉する" aria-expanded="false">
+      <button class="l-header__hamburger" id="js-hamburger" aria-label="メニューを開閉する" aria-expanded="false" aria-controls="js-nav">
         <span></span>
         <span></span>
         <span></span>
@@ -88,13 +83,13 @@
         <div class="l-header__auth">
           {% if user.is_authenticated %}
             <span class="l-header__user-greet">ようこそ <strong>{{ user.username }}</strong> さん</span>
-            <a href="/mypage/" class="c-btn c-btn--outline c-btn--sm">マイページ</a>
-            <form action="/accounts/logout/" method="post" style="display: inline;">
+            <form action="/accounts/logout/" method="post" class="l-header__logout">
               {% csrf_token %}
-              <button type="submit" class="c-btn c-btn--outline c-btn--sm" style="border-color: #94a3b8; color: var(--color-text-muted);">ログアウト</button>
+              <button type="submit" class="c-btn c-btn--outline c-btn--sm">ログアウト</button>
             </form>
           {% else %}
-            <a href="/accounts/login/" class="c-btn c-btn--outline">会員登録/ログイン</a>
+            <a href="{% url 'login' %}" class="c-btn c-btn--outline">ログイン</a>
+            <a href="{% url 'signup' %}" class="c-btn c-btn--outline">新規登録</a>
           {% endif %}
         </div>
       </nav>

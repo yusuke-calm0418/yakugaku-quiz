@@ -1,3 +1,7 @@
+data "aws_ec2_managed_prefix_list" "cloudfront" {
+  name = "com.amazonaws.global.cloudfront.origin-facing"
+}
+
 # ==========================================
 # Security Groups
 # ==========================================
@@ -5,34 +9,15 @@
 # EC2 Webサーバー用セキュリティグループ
 resource "aws_security_group" "ec2" {
   name        = "${var.project_name}-ec2-sg"
-  description = "Security group for EC2 web server (HTTP, HTTPS, SSH)"
+  description = "Security group for EC2 web server (CloudFront HTTP only)"
   vpc_id      = aws_vpc.main.id
 
-  # HTTP (ポート 80)
   ingress {
-    description = "Allow HTTP inbound traffic"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # HTTPS (ポート 443)
-  ingress {
-    description = "Allow HTTPS inbound traffic"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # SSH (ポート 22)
-  ingress {
-    description = "Allow SSH inbound traffic"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.allowed_ssh_cidr]
+    description     = "HTTP from CloudFront origin-facing servers"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    prefix_list_ids = [data.aws_ec2_managed_prefix_list.cloudfront.id]
   }
 
   # アウトバウンド（全開放）

@@ -34,11 +34,16 @@ resource "aws_db_instance" "postgres" {
   publicly_accessible = false
   multi_az            = false # コスト最小化のため単一AZ
 
-  # 削除保護・スナップショット設定（開発・検証時はtrueで素早く破棄可能）
-  skip_final_snapshot = true
+  deletion_protection       = true
+  skip_final_snapshot       = false
+  final_snapshot_identifier = "${var.project_name}-final"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 
   auto_minor_version_upgrade = true
-  backup_retention_period   = 7 # 自動バックアップ（7日間保持）
+  backup_retention_period    = 7 # 自動バックアップ（7日間保持）
 
   tags = {
     Name = "${var.project_name}-postgres"

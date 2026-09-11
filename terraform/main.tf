@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.4"
+    }
     random = {
       source  = "hashicorp/random"
       version = "~> 3.5"
@@ -31,3 +35,10 @@ provider "aws" {
     }
   }
 }
+
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
+data "aws_caller_identity" "current" {}

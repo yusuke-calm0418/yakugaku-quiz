@@ -9,7 +9,7 @@ data "aws_ami" "amazon_linux_2023" {
 
   filter {
     name   = "name"
-    values = ["al2023-ami-2023.*-kernel-6.1-x86_64"]
+    values = ["al2023-ami-2023.*-kernel-6.1-arm64"]
   }
 
   filter {
@@ -24,7 +24,14 @@ resource "aws_instance" "web" {
   instance_type               = var.ec2_instance_type
   subnet_id                   = aws_subnet.public_1a.id
   vpc_security_group_ids      = [aws_security_group.ec2.id]
-  key_name                    = var.ec2_key_name != "" ? var.ec2_key_name : null
+  iam_instance_profile        = aws_iam_instance_profile.web.name
+  associate_public_ip_address = true
+  monitoring                  = false
+
+  metadata_options {
+    http_tokens = "required"
+  }
+
 
   # ルートストレージ (20GB gp3)
   root_block_device {
@@ -50,21 +57,11 @@ resource "aws_instance" "web" {
               # Docker Compose プラグインのインストール
               DOCKER_CONFIG=/usr/local/lib/docker
               mkdir -p $DOCKER_CONFIG/cli-plugins
-              curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
+              curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-aarch64 -o $DOCKER_CONFIG/cli-plugins/docker-compose
               chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose
               EOF
 
   tags = {
     Name = "${var.project_name}-web-server"
-  }
-}
-
-# 固定パブリックIP (Elastic IP)
-resource "aws_eip" "web" {
-  instance = aws_instance.web.id
-  domain   = "vpc"
-
-  tags = {
-    Name = "${var.project_name}-web-eip"
   }
 }

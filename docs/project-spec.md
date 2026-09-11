@@ -25,23 +25,125 @@
 | フロントエンド | HTML5, Vanilla JavaScript, CSS | |
 | 認証 | Django標準認証 (`django.contrib.auth`) | セッション認証 |
 
-### 2.2 AWSインフラ構成（パターンB：標準ミニマム構成）
-コストを最小限に抑えつつ、WebとDBを分離して保守性を確保したミニマム本番構成です。
+### 2.2 AWSインフラ構成（低コスト学習構成）
 
-| サービス名 | 役割 / 設定内容 | 備考・コスト目安 |
+月額3,000円以内を目標としつつ、EC2とRDSを分離し、Route 53・CloudFront・S3を利用してAWSの主要サービスを学べる構成です。
+
+高可用性よりもコストと学習を優先し、EC2とRDSは指定時間だけ起動します。本格公開時は、24時間稼働やALB・Auto Scaling・Multi-AZの追加を改めて検討します。
+
+#### 構成概要
+
+```text
+ユーザー
+  ↓
+Route 53
+  ↓
+CloudFront
+  ├── /static/*・/media/* → S3
+  └── その他              → EC2
+                                 ↓
+                          RDS for PostgreSQL
+```
+
+#### 使用サービス
+
+| サービス名 | 役割 / 設定内容 |
+|---|---|
+| **Amazon Route 53** | 独自ドメインの名前解決。公開用ドメインをCloudFrontへ向ける。 |
+| **Amazon CloudFront** | Webサイトの入口。HTTPS対応、静的ファイルのキャッシュ、EC2への動的リクエスト転送を担当する。 |
+| **AWS Certificate Manager (ACM)** | CloudFrontで使用するSSL/TLS証明書を管理する。CloudFront用証明書はバージニア北部 (`us-east-1`) で作成する。 |
+| **Amazon S3** | CSS、JavaScript、画像などの静的・メディアファイルを保存する。バケットは非公開とし、CloudFrontからのみ参照させる。 |
+| **Amazon EC2** (`t4g.micro`) | Django、Gunicorn、NginxをDocker Composeで稼働する。パブリックサブネットに1台だけ配置する。 |
+| **Amazon RDS for PostgreSQL** (`db.t4g.micro`) | PostgreSQL 15、Single-AZ。プライベートDBサブネットに配置し、EC2からのみ接続を許可する。 |
+| **Amazon EventBridge Scheduler** | EC2とRDSを平日の指定時刻に自動起動・停止する。 |
+| **AWS Lambda** | EventBridge Schedulerから呼び出し、RDSとEC2の起動・停止、必要に応じてRoute 53レコード更新を実行する。 |
+| **Amazon CloudWatch** | EC2・RDSの基本メトリクスと異常を監視する。ログ保存量は必要最小限にする。 |
+| **AWS Systems Manager Parameter Store** | `SECRET_KEY`、DB接続情報などの機密情報を管理する。 |
+
+#### 稼働スケジュール
+
+- 原則として平日10:00〜22:00（日本時間）のみ稼働する。
+- 起動時はRDSを先に起動し、利用可能になった後にEC2を起動する。
+- 停止時はEC2を先に停止し、その後RDSを停止する。
+- 土日・祝日は原則停止し、必要な場合のみ手動で起動する。
+- 本格公開に移行するまでは、停止時間中にサービスを利用できないことを許容する。
+- TerraformではSchedulerが5分ごとに状態を確認し、10:00からRDSの起動を開始する。起動完了とDNS反映までの待ち時間を許容する。
+- 祝日・振替休日は`holiday_dates`で年ごとに管理する。`holiday_calendar_year`が当年と一致しない場合は自動起動を止め、ログにエラーを記録する。
+- Terraformの設定・移行・再実行手順は`terraform/README.md`を参照する。
+
+#### ネットワーク構成
+
+- **VPC**: 1 VPC
+- **パブリックサブネット**: EC2を配置
+- **プライベートDBサブネット**: RDS用に異なるAZのサブネットを2つ用意
+- **Internet Gateway**: EC2のインターネット接続に使用
+- **NAT Gateway**: コスト削減のため使用しない
+- **Application Load Balancer**: EC2が1台のため使用しない
+- **Elastic IP**: 固定費削減のため使用しない
+
+EC2の停止・起動でPublic IPv4アドレスが変更された場合は、起動処理でRoute 53のオリジン用Aレコードを更新します。CloudFrontのオリジンにはEC2のIPアドレスではなく、`origin.<domain>`形式のドメインを指定します。
+
+#### CloudFrontキャッシュ方針
+
+| パス | オリジン | キャッシュ |
 |---|---|---|
-| **Amazon EC2** (`t4g.small` / `t3.micro`) | **Web/APサーバー**<br>- OS: Amazon Linux 2023 / Ubuntu<br>- Docker & Docker Compose上で Django + Gunicorn + Nginx を稼働<br>- パブリックサブネットに配置 | 約 $3〜$8 / 月<br>（無料利用枠対象あり） |
-| **Amazon RDS for PostgreSQL** (`db.t4g.micro`) | **マネージドデータベース**<br>- PostgreSQL 15<br>- 自動バックアップ & ストレージ自動拡張<br>- プライベートサブネットに配置（EC2からのみアクセス許可） | 約 $15〜$20 / 月<br>（12ヶ月間無料利用枠あり） |
-| **Amazon S3** | **静的・メディアファイル配信**<br>- `django-storages` + `boto3` による静的ファイル/画像配信<br>※初期はWhiteNoise配信でS3省略も可能 | 従量課金（数十円〜 / 月） |
-| **Amazon Route 53** | **DNS・ドメインルーティング**<br>- 独自ドメインのレコード管理 | 約 $0.50 / 月 |
-| **Let's Encrypt (Certbot)** | **SSL/TLS証明書（HTTPS対応）**<br>- EC2上のNginxで無料取得・自動更新 | 無料 |
+| `/static/*` | S3 | 有効 |
+| `/media/*` | S3 | 有効 |
+| `/*` | EC2 | 無効 |
 
-#### ネットワーク & セキュリティ方針
-- **VPC**: 1 VPC（パブリックサブネット × 2、プライベートサブネット × 2）
-- **セキュリティグループ (SG)**:
-  - `EC2-SG`: 80(HTTP), 443(HTTPS) を世界公開、22(SSH) は指定IPのみ許可
-  - `RDS-SG`: 5432(PostgreSQL) を `EC2-SG` からのみ許可
-- **環境変数**: 機密情報（SECRET_KEY, DB接続情報, S3キー等）は `.env` または AWS Systems Manager Parameter Store で一元管理（コードへのハードコード厳禁）
+ログイン状態、セッションCookie、CSRFトークン、回答結果、学習履歴などを含む動的ページはキャッシュしません。
+
+#### セキュリティグループ
+
+- **EC2-SG**:
+  - HTTP/HTTPSはCloudFrontからの通信に限定する。
+  - SSHの22番ポートは原則公開しない。
+  - Gunicornの待受ポートは外部公開しない。
+- **RDS-SG**:
+  - 5432番ポートを`EC2-SG`からのみ許可する。
+  - Public accessは無効にする。
+
+#### 機密情報
+
+- `SECRET_KEY`、DB接続情報などをコードへハードコードしない。
+- `.env`をGitへコミットしない。
+- EC2からAWSサービスへアクセスする場合は、アクセスキーではなくIAMロールを優先する。
+- IAMポリシーは最小権限とする。
+
+#### バックアップ
+
+- RDSの自動バックアップを有効にする。
+- 保持期間は復旧要件と料金を確認して決定する。
+- アプリケーションコードはGitで管理する。
+- 大きな変更前には必要に応じてEBSスナップショットを作成する。
+
+#### 料金方針
+
+- AWS利用料は月額3,000円以内を目標とする。
+- AWS Budgetsで1,500円、2,000円、2,500円相当の通知を設定する。
+- AWS Budgetsは通知機能であり、料金を自動停止する仕組みではない点に注意する。
+- 料金が増加する可能性のある構成変更は、実装前にユーザーへ確認する。
+
+以下のサービス・構成は、ユーザーの明示的な承認なく追加しません。
+
+- NAT Gateway
+- Application Load Balancer
+- 2台目以降のEC2
+- RDS Multi-AZ
+- Elastic IP
+- AWS WAF
+- 常時稼働への変更
+
+#### 将来の拡張
+
+アクセス数や可用性要件が高くなった場合は、次の順番で再検討します。
+
+1. EC2・RDSの24時間稼働
+2. EC2のインスタンスタイプ変更
+3. Application Load Balancerの追加
+4. Auto Scaling Groupと複数EC2の追加
+5. RDS Multi-AZ化
+6. NAT GatewayまたはVPCエンドポイントの追加
 
 ---
 

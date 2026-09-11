@@ -1,19 +1,21 @@
-# ==========================================
-# 変数設定サンプル (terraform.tfvars にリネームして使用)
-# ==========================================
-
-# AWS リージョン
 aws_region   = "ap-northeast-1"
 project_name = "yakugaku-quiz"
 environment  = "prod"
 
-# EC2 設定
-ec2_instance_type = "t3.micro"
-ec2_key_name      = "your-key-pair-name" # AWSマネジメントコンソールで作成したキーペア名
-allowed_ssh_cidr  = "0.0.0.0/0"          # セキュリティ強化のため自身のIP（例: "203.0.113.1/32"）推奨
-
-# RDS 設定
+ec2_instance_type  = "t4g.micro"
 rds_instance_class = "db.t4g.micro"
 db_name            = "yakugaku_quiz"
 db_username        = "postgres"
-db_password        = "YOUR_STRONG_PASSWORD_HERE" # 8文字以上の強固なパスワードを指定
+
+# 既存のパブリックホストゾーンを指定する（新規ゾーンは作成しない）
+domain_name    = "quiz.example.com"
+hosted_zone_id = "Z_REPLACE_WITH_YOUR_ZONE_ID"
+budget_email   = "you@example.com"
+budget_usd_jpy = 150 # 換算例。利用開始時に見直す
+
+# 対象年の祝日・振替休日・国民の休日をすべて入力してからplanする
+holiday_calendar_year = 2026
+holiday_dates         = []
+
+# 秘密情報はTF_VAR_db_password / TF_VAR_django_secret_keyで渡す。
+# Terraform stateには保存されるのでstateも厳重に管理する。

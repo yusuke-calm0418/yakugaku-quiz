@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -16,11 +17,14 @@ class Question(models.Model):
         ('required', '必須問題'),
         ('general', '一般問題'),
     ]
+    question_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
     text = models.TextField()
     choice1 = models.CharField(max_length=255)
     choice2 = models.CharField(max_length=255)
     choice3 = models.CharField(max_length=255)
     choice4 = models.CharField(max_length=255)
+    choice5 = models.CharField(max_length=255, blank=True, default='')
+    choice6 = models.CharField(max_length=255, blank=True, default='')
     correct = models.CharField(max_length=10) 
     explanation = models.TextField()
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
@@ -29,6 +33,31 @@ class Question(models.Model):
         choices=QUESTION_TYPE_CHOICES,
         default='general'
     )
+
+    @property
+    def choices_list(self):
+        return [
+            {'num': str(number), 'text': value}
+            for number in range(1, 7)
+            if (value := getattr(self, f'choice{number}')).strip()
+        ]
+
+    def clean(self):
+        super().clean()
+        correct = self.correct or ''
+        error = None
+        if not correct or any(value not in '123456' for value in correct):
+            error = '正解番号は1〜6のみ指定できます。'
+        elif len(set(correct)) != len(correct):
+            error = '同じ正解番号を重複して指定できません。'
+        elif self.question_type == 'required' and len(correct) != 1:
+            error = '必須問題の正解は1つ指定してください。'
+        elif self.question_type == 'general' and len(correct) > 2:
+            error = '一般問題の正解は1つまたは2つ指定してください。'
+        elif any(value not in {choice['num'] for choice in self.choices_list} for value in correct):
+            error = '空欄の選択肢を正解に指定できません。'
+        if error:
+            raise ValidationError({'correct': error})
 
     def __str__(self):
         return self.text[:50]

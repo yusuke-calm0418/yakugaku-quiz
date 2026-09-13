@@ -1,0 +1,7 @@
+{% extends "admin/import_export/import.html" %}
+{% load admin_urls %}
+
+{% block import_form %}
+  <p>エラーのため、問題は登録・更新されませんでした。</p>
+  <p><a href="{% url opts|admin_urlname:'import' %}">CSVを修正して再アップロード</a></p>
+{% endblock %}

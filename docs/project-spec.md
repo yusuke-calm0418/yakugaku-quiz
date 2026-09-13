@@ -183,12 +183,15 @@ yakugaku-quiz/
 | フィールド名 | 型 | 制約 / 選択肢 | 説明 |
 |---|---|---|---|
 | `id` | BigAutoField | PK | 問題ID |
+| `question_code` | CharField(50) | UNIQUE、NULL/空欄許容 | CSVで必須の問題管理番号。既存問題は未設定可 |
 | `text` | TextField | NOT NULL | 問題文 |
 | `choice1` | CharField(255) | NOT NULL | 選択肢1 |
 | `choice2` | CharField(255) | NOT NULL | 選択肢2 |
 | `choice3` | CharField(255) | NOT NULL | 選択肢3 |
 | `choice4` | CharField(255) | NOT NULL | 選択肢4 |
-| `correct` | CharField(10) | NOT NULL | 正解番号（文字列）。単一正解なら `'1'`、複数正解なら `'13'` のように連結して保持 |
+| `choice5` | CharField(255) | 空欄可、既定値 `''` | 選択肢5 |
+| `choice6` | CharField(255) | 空欄可、既定値 `''` | 選択肢6 |
+| `correct` | CharField(10) | NOT NULL | 正解番号（1〜6の文字列、空欄の選択肢は指定不可）。単一正解なら `'1'`、複数正解なら `'13'` のように連結して保持 |
 | `explanation` | TextField | NOT NULL | 解答・解説文 |
 | `category` | CharField(50) | 選択肢あり | 出題分野（下記参照） |
 | `question_type` | CharField(20) | デフォルト `'general'` | 問題種別（下記参照） |
@@ -250,6 +253,7 @@ yakugaku-quiz/
    - **ランダム選出**: 絞り込まれた問題セットから `random.choice` で1問抽出。
 
 2. **解答UI (フロントエンド)**:
+   - choice1〜choice6のうち値がある選択肢のみ番号を保って表示。既存4択、5択、6択に対応。
    - **必須問題 (`required`)**: ラジオボタン（単一選択）
    - **一般問題 (`general`)**: チェックボックス（複数選択）。JavaScriptにより **最大2つまで** しか選択できないよう制限。
 
@@ -261,7 +265,7 @@ yakugaku-quiz/
 
 4. **画面・操作**:
    - 共通ヘッダー付きのレスポンシブ画面で問題・選択肢・正誤・正解・解説を表示。
-   - 未選択、不正な値、選択数超過はサーバーでも検証し、履歴を保存しない。
+   - 未選択、不正な値（空欄の選択肢への回答を含む）、選択数超過はサーバーでも検証し、履歴を保存しない。
    - 次問・スキップ・再挑戦でも科目、問題種別、モードを維持。
    - ブックマークはCSRF対策付きPOSTでセッションに保存（同一ブラウザのセッション内）。
    - 指定問題数は1〜100問、未指定はセッション設定または30問。指定数の回答後に完了案内を表示。スキップは回答数に含めない。
@@ -290,6 +294,8 @@ yakugaku-quiz/
 
 ### 5.6 管理画面 (`/admin/`)
 - 問題（`Question`）の追加・編集・削除
+- Question一覧のインポートからUTF-8（BOM付き可）のCSVをアップロードし、プレビュー確認後に一括登録・更新。`question_code`をキーに更新し、重複・入力エラー時は全件ロールバックする。追加・変更権限が必要。
+- CSV形式・入力条件は[問題CSVインポート仕様](product-specs/question-csv-import.md)、サンプルは[こちら](features/samples/questions-import-sample.csv)を参照。
 - 回答ログ（`Answer`）の閲覧・管理
 
 ---

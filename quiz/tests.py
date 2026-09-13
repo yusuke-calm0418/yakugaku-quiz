@@ -71,3 +71,44 @@ class QuizTests(TestCase):
         response = self.client.post('/quiz/', {'question_id': self.question.pk, 'choice': '1'})
         self.assertContains(response, '○ 正解！')
         self.assertEqual(Answer.objects.count(), 0)
+
+    def test_five_and_six_choices_display_and_grading(self):
+        for count in (5, 6):
+            with self.subTest(count=count):
+                self.question.choice5 = '追加選択肢5'
+                self.question.choice6 = '追加選択肢6' if count == 6 else ''
+                self.question.correct = str(count)
+                self.question.full_clean()
+                self.question.save()
+                response = self.client.get('/quiz/', {'question_id': self.question.pk})
+                self.assertEqual(len(response.context['choices_list']), count)
+                self.assertContains(response, 'type="radio"', count=count)
+                self.assertContains(response, '追加選択肢5')
+                if count == 5:
+                    self.assertNotContains(response, 'value="6"')
+                else:
+                    self.assertContains(response, '追加選択肢6')
+                response = self.client.post('/quiz/', {'question_id': self.question.pk, 'choice': str(count)})
+                self.assertTrue(response.context['is_correct'])
+                self.assertEqual(response.context['correct_choices_data'][0]['num'], str(count))
+                answer = Answer.objects.latest('pk')
+                self.assertTrue(answer.is_correct)
+                self.assertEqual(answer.selected, count)
+
+    def test_optional_choices_and_selection_limits(self):
+        self.question.choice5 = '選択肢5'
+        self.question.choice6 = '   '
+        self.question.save()
+        for choices in (['6'], ['7'], ['5', '1'], ['5', '5']):
+            response = self.client.post('/quiz/', {'question_id': self.question.pk, 'choice': choices})
+            self.assertIsNotNone(response.context['error'])
+        self.assertFalse(Answer.objects.exists())
+        self.question.choice6 = '選択肢6'
+        self.question.question_type = 'general'
+        self.question.correct = '56'
+        self.question.save()
+        response = self.client.post('/quiz/', {'question_id': self.question.pk, 'choice': ['6', '5']})
+        self.assertTrue(response.context['is_correct'])
+        response = self.client.post('/quiz/', {'question_id': self.question.pk, 'choice': ['1', '5', '6']})
+        self.assertIsNotNone(response.context['error'])
+        self.assertEqual(Answer.objects.count(), 1)

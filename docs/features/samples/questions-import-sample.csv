@@ -1,0 +1,3 @@
+question_code,text,choice1,choice2,choice3,choice4,choice5,choice6,correct,explanation,category,question_type
+SAMPLE-001,サンプル必須問題。選択肢5を選んでください。,選択肢1,選択肢2,選択肢3,選択肢4,選択肢5,,5,CSV動作確認用のサンプルです。,pharmacology,required
+SAMPLE-002,サンプル一般問題。選択肢5と6を選んでください。,選択肢1,選択肢2,選択肢3,選択肢4,選択肢5,選択肢6,56,CSV動作確認用のサンプルです。,pharmacology,general

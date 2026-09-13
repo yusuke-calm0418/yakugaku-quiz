@@ -39,7 +39,7 @@ def question_view(request):
         if (
             not selected or len(selected) > limit
             or len(set(selected)) != len(selected)
-            or any(value not in ('1', '2', '3', '4') for value in selected)
+            or any(value not in {choice['num'] for choice in question.choices_list} for value in selected)
         ):
             error = '選択肢を1つ選んでください。' if limit == 1 else '選択肢を1つまたは2つ選んでください。'
         else:
@@ -165,12 +165,7 @@ def question_view(request):
     category_name = category_display_dict.get(question.category, '国家試験問題')
 
     # 選択肢リスト
-    choices_list = [
-        {'num': '1', 'text': question.choice1},
-        {'num': '2', 'text': question.choice2},
-        {'num': '3', 'text': question.choice3},
-        {'num': '4', 'text': question.choice4},
-    ]
+    choices_list = question.choices_list
 
     # 正解・選択のテキストリスト
     correct_choices_data = [c for c in choices_list if c['num'] in list(question.correct)]

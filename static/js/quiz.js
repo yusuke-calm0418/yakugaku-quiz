@@ -39,3 +39,12 @@ if (bookmarkForm) {
     }
   });
 }
+
+// Bring the grading result into view after the answer page has loaded.
+const resultTitle = document.getElementById('result-title');
+if (resultTitle) {
+  window.addEventListener('pageshow', () => {
+    resultTitle.focus({preventScroll: true});
+    resultTitle.scrollIntoView({block: 'start', behavior: 'instant'});
+  });
+}

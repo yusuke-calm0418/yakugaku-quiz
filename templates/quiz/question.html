@@ -4,10 +4,19 @@
 {% block extra_head %}<link rel="stylesheet" href="{% static 'styles/quiz.css' %}">{% endblock %}
 {% block content %}
 <div class="quiz-page l-container--narrow">
-  <div class="quiz-heading"><div><p class="quiz-eyebrow">PRACTICE</p><h1>問題演習</h1></div><a href="{% url 'question_select' %}">問題・モードを選び直す →</a></div>
+  <div class="quiz-heading"><div><p class="quiz-eyebrow">PRACTICE</p><h1>{% if result %}解答結果{% else %}問題演習{% endif %}</h1></div><a href="{% url 'question_select' %}">問題・モードを選び直す →</a></div>
   {% if question %}
   <div class="quiz-meta"><div><strong>{{ progress_index }} / {{ total_quiz_count }} 問</strong><progress value="{{ progress_percent }}" max="100" aria-label="演習の進捗">{{ progress_percent }}%</progress></div><span>{% if user.is_authenticated %}通算正答率 <strong>{{ accuracy }}%</strong>{% else %}<a href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">ログインして学習を記録</a>{% endif %}</span></div>
   <article class="quiz-card">
+    {% if result %}
+    <section class="quiz-result {% if not is_correct %}quiz-result--wrong{% endif %}" aria-labelledby="result-title">
+      <h2 id="result-title" tabindex="-1">{% if is_correct %}○ 正解！{% else %}× 不正解{% endif %}</h2>
+      <div class="quiz-result-answers"><div><h3>あなたの回答</h3>{% for choice in selected_choices_data %}<p>{{ choice.num }}. {{ choice.text }}</p>{% endfor %}</div><div><h3>正解</h3>{% for choice in correct_choices_data %}<p>{{ choice.num }}. {{ choice.text }}</p>{% endfor %}</div></div>
+      <h3>解説</h3><div class="quiz-explanation">{{ question.explanation|linebreaksbr }}</div>
+    </section>
+    {% if complete %}<p class="quiz-finished" role="status">{{ total_quiz_count }}問の演習が完了しました。おつかれさまでした！</p>{% endif %}
+    {% endif %}
+    {% if result %}<div class="quiz-review">{% endif %}
     <div class="quiz-tags"><span>{{ category_name }}</span><span>{{ question.get_question_type_display }}</span><span>問題 {{ question.id }}</span></div>
     <h2 class="quiz-question" id="question-title">{{ question.text|linebreaksbr }}</h2>
     <form method="post" id="quiz-answer-form">
@@ -25,14 +34,7 @@
       <p class="quiz-error" id="choice-error" role="alert">{{ error|default:'' }}</p>
       {% if not result %}<div class="quiz-actions"><a href="{{ next_url }}">この問題をスキップ</a><button type="submit" class="c-btn c-btn--primary">回答する</button></div>{% endif %}
     </form>
-    {% if result %}
-    <section class="quiz-result {% if not is_correct %}quiz-result--wrong{% endif %}" aria-labelledby="result-title">
-      <h2 id="result-title">{% if is_correct %}○ 正解！{% else %}× 不正解{% endif %}</h2>
-      <div class="quiz-result-answers"><div><h3>あなたの回答</h3>{% for choice in selected_choices_data %}<p>{{ choice.num }}. {{ choice.text }}</p>{% endfor %}</div><div><h3>正解</h3>{% for choice in correct_choices_data %}<p>{{ choice.num }}. {{ choice.text }}</p>{% endfor %}</div></div>
-      <h3>解説</h3><div class="quiz-explanation">{{ question.explanation|linebreaksbr }}</div>
-    </section>
-    {% if complete %}<p class="quiz-finished" role="status">{{ total_quiz_count }}問の演習が完了しました。おつかれさまでした！</p>{% endif %}
-    {% endif %}
+    {% if result %}</div>{% endif %}
     <div class="quiz-actions quiz-bottom">
       <form method="post" id="quiz-bookmark-form">{% csrf_token %}<input type="hidden" name="question_id" value="{{ question.id }}"><input type="hidden" name="action" value="toggle_bookmark"><button type="submit" class="quiz-bookmark" aria-pressed="{{ is_bookmarked|yesno:'true,false' }}">{% if is_bookmarked %}★ ブックマーク済み{% else %}☆ ブックマーク{% endif %}</button><span id="bookmark-status" role="status"></span></form>
       {% if result %}<a class="c-btn c-btn--outline" href="{{ retry_url }}">もう一度解く</a>{% if complete %}<a class="c-btn c-btn--primary" href="{% url 'question_select' %}">次の演習を選ぶ →</a>{% else %}<a class="c-btn c-btn--primary" href="{{ next_url }}">次の問題へ →</a>{% endif %}{% endif %}

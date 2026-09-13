@@ -2,7 +2,11 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 
-# Create your models here.
+def validate_question_image_size(image):
+    if image and not image._committed and image.size > 5 * 1024 * 1024:
+        raise ValidationError('問題画像は5MB以下にしてください。')
+
+
 class Question(models.Model):
     CATEGORY_CHOICES = [
         ('physics_chemistry_biology', '物理・化学・生物'),
@@ -19,6 +23,11 @@ class Question(models.Model):
     ]
     question_code = models.CharField(max_length=50, unique=True, null=True, blank=True)
     text = models.TextField()
+    question_image = models.ImageField(
+        upload_to='questions/', blank=True, null=True,
+        validators=[validate_question_image_size],
+        help_text='問題図（PNG・JPEG・WebP、5MB以下）。省略できます。',
+    )
     choice1 = models.CharField(max_length=255)
     choice2 = models.CharField(max_length=255)
     choice3 = models.CharField(max_length=255)

@@ -19,6 +19,9 @@
     {% if result %}<div class="quiz-review">{% endif %}
     <div class="quiz-tags"><span>{{ category_name }}</span><span>{{ question.get_question_type_display }}</span><span>問題 {{ question.id }}</span></div>
     <h2 class="quiz-question" id="question-title">{{ question.text|linebreaksbr }}</h2>
+    {% if question.question_image %}
+    <img src="{{ question.question_image.url }}" alt="問題図" class="question-image">
+    {% endif %}
     <form method="post" id="quiz-answer-form">
       {% csrf_token %}<input type="hidden" name="question_id" value="{{ question.id }}">
       <fieldset class="quiz-choices" {% if result %}disabled{% endif %} aria-describedby="choice-help">

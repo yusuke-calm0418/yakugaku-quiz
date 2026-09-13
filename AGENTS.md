@@ -7,9 +7,9 @@
 
 ## Feature Specifications
 個別機能を新規作成・修正する場合は、該当する機能仕様を確認する。
-* 問題CSVインポート: `docs/product-specs/question-csv-import.md`
+- 問題CSVインポート: `docs/product-specs/question-csv-import.md`
+- 問題画像表示: `docs/product-specs/question-image-support.md`
 機能仕様と既存実装に差異がある場合は、既存コードと `docs/project-spec.md` を確認したうえで整合性を保つこと。
-
 
 ## Development Rules
 コードの新規作成・修正時は以下を参照してください。

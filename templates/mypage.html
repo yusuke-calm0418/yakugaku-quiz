@@ -1,21 +1,46 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}マイページ | 薬剤師国家試験対策{% endblock %}
-{% block extra_head %}<link rel="stylesheet" href="{% static 'styles/mypage.css' %}">{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'styles/mypage.css' %}">{% endblock %}
 {% block content %}
 <div class="mypage l-container">
-  <div class="mypage-heading"><div><p class="mypage-eyebrow">MY PAGE</p><h1>マイページ</h1><p>日々の積み重ねを、合格への自信に。</p></div><a class="c-btn c-btn--primary" href="{% url 'question_select' %}">問題演習を始める →</a></div>
+  <div class="mypage-heading">
+    <div>
+      <p class="mypage-eyebrow">MY PAGE</p>
+      <h1>マイページ</h1>
+      <p>日々の積み重ねを、合格への自信に。</p>
+    </div><a class="c-btn c-btn--primary" href="{% url 'question_select' %}">問題演習を始める →</a>
+  </div>
   <div class="mypage-layout">
     <div class="mypage-main">
       <section class="mypage-card" aria-labelledby="profile-title">
         <h2 id="profile-title">基本情報</h2>
-        <dl class="mypage-profile"><dt>アカウント名</dt><dd>{{ user.username }}</dd><dt>メールアドレス</dt><dd>{{ user.email|default:'未登録' }}</dd></dl>
+        <dl class="mypage-profile">
+          <dt>アカウント名</dt>
+          <dd>{{ user.username }}</dd>
+          <dt>メールアドレス</dt>
+          <dd>{{ user.email|default:'未登録' }}</dd>
+        </dl>
         <a class="mypage-link" href="{% url 'password_reset' %}">パスワードを再設定する →</a>
       </section>
       <div class="mypage-stats" aria-label="学習統計">
-        <section class="mypage-stat"><h2>正答率</h2><p>全ての回答に対する正答率</p><div class="mypage-number">{% if total %}{{ accuracy }}<small>%</small>{% else %}—{% endif %}</div><span>正解 {{ correct }} 回 / 回答 {{ total }} 回</span></section>
-        <section class="mypage-stat"><h2>累計回答数</h2><p>繰り返しの回答も含む合計</p><div class="mypage-number">{{ total }}<small>回</small></div><span>一問ずつ、着実に。</span></section>
-        <section class="mypage-stat"><h2>連続学習日数</h2><p>今日または昨日までの記録</p><div class="mypage-number">{{ streak }}<small>日</small></div><span>日本時間で集計</span></section>
+        <section class="mypage-stat">
+          <h2>正答率</h2>
+          <p>全ての回答に対する正答率</p>
+          <div class="mypage-number">{% if total %}{{ accuracy }}<small>%</small>{% else %}—{% endif %}</div><span>正解
+            {{ correct }} 回 / 回答 {{ total }} 回</span>
+        </section>
+        <section class="mypage-stat">
+          <h2>累計回答数</h2>
+          <p>繰り返しの回答も含む合計</p>
+          <div class="mypage-number">{{ total }}<small>回</small></div><span>一問ずつ、着実に。</span>
+        </section>
+        <section class="mypage-stat">
+          <h2>連続学習日数</h2>
+          <p>今日または昨日までの記録</p>
+          <div class="mypage-number">{{ streak }}<small>日</small></div><span>日本時間で集計</span>
+        </section>
       </div>
       <section class="mypage-card" aria-labelledby="subjects-title">
         <h2 id="subjects-title">各科目の進捗状況</h2>
@@ -25,17 +50,40 @@
           {% for subject in subjects %}
           <div class="mypage-subject">
             <a href="/quiz/?category={{ subject.key }}">{{ subject.label }}</a>
-            <div><div class="mypage-progress"><progress max="100" value="{{ subject.progress }}" aria-label="{{ subject.label }}の回答済み割合">{{ subject.progress }}%</progress><strong>{{ subject.progress }}%</strong></div><p class="mypage-note">{{ subject.answered }} / {{ subject.available }} 問回答済み · {% if subject.total %}正答率 {{ subject.accuracy }}%{% elif subject.available %}未学習{% else %}問題準備中{% endif %}</p></div>
+            <div>
+              <div class="mypage-progress"><progress max="100" value="{{ subject.progress }}"
+                  aria-label="{{ subject.label }}の回答済み割合">{{ subject.progress }}%</progress><strong>{{ subject.progress }}%</strong>
+              </div>
+              <p class="mypage-note">{{ subject.answered }} / {{ subject.available }} 問回答済み · {% if subject.total %}正答率
+                {{ subject.accuracy }}%{% elif subject.available %}未学習{% else %}問題準備中{% endif %}</p>
+            </div>
           </div>
           {% endfor %}
         </div>
       </section>
     </div>
     <aside class="mypage-sidebar" aria-label="学習メニュー">
-      <section class="mypage-card mypage-review"><p class="mypage-eyebrow">REVIEW</p><h2>苦手を、得意に。</h2><p>復習対象の問題</p><div class="mypage-number">{{ weak_count }}<small>問</small></div><p class="mypage-note">2回以上回答し、正答率が50%未満の問題です。</p>{% if weak_count %}<a class="c-btn c-btn--primary" href="/quiz/?mode=weak">苦手問題を復習する →</a>{% else %}<p>{% if total %}現在、復習対象の問題はありません。{% else %}問題を解くと、復習が必要な問題を確認できます。{% endif %}</p>{% endif %}</section>
-      <section class="mypage-card"><h2>学習メニュー</h2><nav class="mypage-shortcuts" aria-label="学習へのリンク"><a href="{% url 'question_select' %}">問題・モードを選ぶ <span>→</span></a><a href="{% url 'question_list' %}">問題一覧を見る <span>→</span></a><a href="{% url 'question_list' %}?tab=weak">苦手問題を確認する <span>→</span></a></nav></section>
-      <section class="mypage-card"><h2>お知らせ</h2>
-        <div class="mypage-shortcuts">{% for news in latest_news %}<a href="{{ news.get_absolute_url }}"><div><time class="mypage-note" datetime="{{ news.published_at|date:'c' }}">{{ news.published_at|date:'Y.m.d' }}</time><br>{{ news.title }}</div><span>→</span></a>{% empty %}<p class="mypage-note">現在、お知らせはありません。</p>{% endfor %}</div>
+      <section class="mypage-card mypage-review">
+        <p class="mypage-eyebrow">REVIEW</p>
+        <p>苦手問題</p>
+        <div class="mypage-number">{{ weak_count }}<small>問</small></div>
+        <p class="mypage-note">2回以上回答し、正答率が50%未満の問題です。</p>{% if weak_count %}<a class="c-btn c-btn--primary"
+          href="/quiz/?mode=weak">苦手問題を復習する →</a>{% else %}<p>{% if total %}現在、復習対象の問題はありません。{% else
+          %}問題を解くと、復習が必要な問題を確認できます。{% endif %}</p>{% endif %}
+      </section>
+      <section class="mypage-card">
+        <h2>学習メニュー</h2>
+        <nav class="mypage-shortcuts" aria-label="学習へのリンク"><a href="{% url 'question_select' %}">問題・モードを選ぶ
+            <span>→</span></a><a href="{% url 'question_list' %}">問題一覧を見る <span>→</span></a><a
+            href="{% url 'question_list' %}?tab=weak">苦手問題を確認する <span>→</span></a></nav>
+      </section>
+      <section class="mypage-card">
+        <h2>お知らせ</h2>
+        <div class="mypage-shortcuts">{% for news in latest_news %}<a href="{{ news.get_absolute_url }}">
+            <div><time class="mypage-note"
+                datetime="{{ news.published_at|date:'c' }}">{{ news.published_at|date:'Y.m.d' }}</time><br>{{ news.title }}
+            </div><span>→</span>
+          </a>{% empty %}<p class="mypage-note">現在、お知らせはありません。</p>{% endfor %}</div>
         <a class="mypage-link" href="{% url 'news_list' %}">お知らせ一覧を見る →</a>
       </section>
     </aside>

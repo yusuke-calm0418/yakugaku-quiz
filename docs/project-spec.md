@@ -185,6 +185,7 @@ yakugaku-quiz/
 | `id` | BigAutoField | PK | 問題ID |
 | `question_code` | CharField(50) | UNIQUE、NULL/空欄許容 | CSVで必須の問題管理番号。既存問題は未設定可 |
 | `text` | TextField | NOT NULL | 問題文 |
+| `question_image` | ImageField | 任意、NULL/空欄可 | 問題画像1枚（questions/へ保存） |
 | `choice1` | CharField(255) | NOT NULL | 選択肢1 |
 | `choice2` | CharField(255) | NOT NULL | 選択肢2 |
 | `choice3` | CharField(255) | NOT NULL | 選択肢3 |
@@ -253,6 +254,7 @@ yakugaku-quiz/
    - **ランダム選出**: 絞り込まれた問題セットから `random.choice` で1問抽出。
 
 2. **解答UI (フロントエンド)**:
+   - 問題文 → 問題画像（登録時のみ）→ 選択肢の順に表示。画像は縦横比を維持し、画面幅に収まるよう表示する。
    - choice1〜choice6のうち値がある選択肢のみ番号を保って表示。既存4択、5択、6択に対応。
    - **必須問題 (`required`)**: ラジオボタン（単一選択）
    - **一般問題 (`general`)**: チェックボックス（複数選択）。JavaScriptにより **最大2つまで** しか選択できないよう制限。
@@ -294,6 +296,8 @@ yakugaku-quiz/
 
 ### 5.6 管理画面 (`/admin/`)
 - 問題（`Question`）の追加・編集・削除
+- 任意の問題画像1枚を管理画面から登録・変更・クリア可能（PNG/JPEG/WebP、5MB以下）。CSV更新では登録済み画像を保持する。画像ファイルのCSV登録は対象外。
+- 開発画像は `MEDIA_ROOT=BASE_DIR / "media"` に保存し、DEBUG時のみ `/media/` から配信。media/はGit管理対象外。画像の変更・クリア後も旧ファイルはDjango標準動作に従いストレージに残る。詳細は[問題画像仕様](product-specs/question-image-support.md)。
 - Question一覧のインポートからUTF-8（BOM付き可）のCSVをアップロードし、プレビュー確認後に一括登録・更新。`question_code`をキーに更新し、重複・入力エラー時は全件ロールバックする。追加・変更権限が必要。
 - CSV形式・入力条件は[問題CSVインポート仕様](product-specs/question-csv-import.md)、サンプルは[こちら](features/samples/questions-import-sample.csv)を参照。
 - 回答ログ（`Answer`）の閲覧・管理

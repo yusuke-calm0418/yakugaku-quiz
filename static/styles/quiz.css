@@ -335,3 +335,9 @@
     padding: 20px 16px;
   }
 }
+.question-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto 32px;
+}

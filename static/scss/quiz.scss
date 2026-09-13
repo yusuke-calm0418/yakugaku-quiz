@@ -70,3 +70,5 @@ $breakpoint-mobile: 767px;
   .quiz-result-answers { grid-template-columns: 1fr; }
   .quiz-result h2 { font-size: 28px; padding: 20px 16px; }
 }
+
+.question-image { display: block; max-width: 100%; height: auto; margin: 0 auto 32px; }

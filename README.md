@@ -123,6 +123,7 @@ docker compose exec web python manage.py test
 
 - 開発用設定のため `DEBUG=True` です。
 - メール送信はコンソールバックエンドを使用しているため、パスワードリセットメールはコンテナログに出力されます。
+- Render無料枠での一時公開は[デプロイ手順](docs/deploy/render.md)を参照してください。Renderでは `DEBUG=False` です。
 
 ## お知らせの投稿
 

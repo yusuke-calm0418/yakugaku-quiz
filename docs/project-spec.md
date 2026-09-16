@@ -147,6 +147,14 @@ EC2の停止・起動でPublic IPv4アドレスが変更された場合は、起
 
 ---
 
+### 2.3 Render一時公開環境
+
+AWS構築前の確認用として、Render Free Web Service（Python 3.12 / Gunicorn / WhiteNoise）とFree PostgreSQL 15を使用する独立した構成を追加する。両サービスを `render.yaml` で無料プランに指定し、`build.sh` で依存関係導入・collectstatic・migrateを実行する。モデル・既存Docker Compose・AWS構成は変更しない。
+
+Renderでは環境変数の秘密鍵・DB URLを使用し、DEBUGはFalse、staticはWhiteNoise配信とする。無料環境ではmediaの永続化・配信とメール配送は利用せず、画像不要の問題で一時公開する。ローカルの画像機能・開発用メール出力は維持する。無料DBの期限・管理者作成・初期データ投入・削除手順は[Render一時公開手順](deploy/render.md)を参照する。
+
+---
+
 ## 3. ディレクトリ構成
 
 ```text

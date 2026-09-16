@@ -1,0 +1,25 @@
+databases:
+  - name: yakugaku-quiz-db
+    plan: free
+    region: singapore
+    postgresMajorVersion: "15"
+    ipAllowList: []
+
+services:
+  - type: web
+    name: yakugaku-quiz
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: bash build.sh
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --access-logfile - --error-logfile -
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: yakugaku-quiz-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"

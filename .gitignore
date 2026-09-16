@@ -32,12 +32,14 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media/
-static/css
+static/css/*
+!static/css/style.css
+staticfiles/
 
 # Environment variables
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 # IDE & OS
 .DS_Store

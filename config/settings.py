@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.utils import get_random_secret_key
@@ -169,7 +170,38 @@ if IS_RENDER:
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'
 LOGOUT_REDIRECT_URL = '/'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_PROVIDER = os.environ.get('EMAIL_PROVIDER', 'console').strip().lower()
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'webmaster@localhost').strip()
+if EMAIL_PROVIDER == 'console':
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+elif EMAIL_PROVIDER == 'resend':
+    INSTALLED_APPS.append('anymail')
+    EMAIL_BACKEND = 'anymail.backends.resend.EmailBackend'
+    ANYMAIL = {
+        'RESEND_API_KEY': os.environ.get('RESEND_API_KEY', '').strip(),
+        'REQUESTS_TIMEOUT': 10,
+    }
+    if not ANYMAIL['RESEND_API_KEY'] or not os.environ.get('DEFAULT_FROM_EMAIL', '').strip():
+        raise ImproperlyConfigured('Resend requires RESEND_API_KEY and DEFAULT_FROM_EMAIL.')
+else:
+    raise ImproperlyConfigured('EMAIL_PROVIDER must be console or resend.')
+
+# A configured origin avoids building security-sensitive links from an incoming Host.
+SITE_URL = os.environ.get('SITE_URL',
+    f'https://{RENDER_EXTERNAL_HOSTNAME}' if RENDER_EXTERNAL_HOSTNAME else 'http://localhost:8000',
+).strip().rstrip('/')
+site_url_parts = urlsplit(SITE_URL)
+if (site_url_parts.scheme not in ('http', 'https') or not site_url_parts.hostname
+        or site_url_parts.username or site_url_parts.password or site_url_parts.path
+        or site_url_parts.query or site_url_parts.fragment):
+    raise ImproperlyConfigured('SITE_URL must be an http(s) origin without a path or credentials.')
+if not DEBUG and (IS_RENDER or EMAIL_PROVIDER == 'resend') and site_url_parts.scheme != 'https':
+    raise ImproperlyConfigured('SITE_URL must use HTTPS for public email delivery.')
+
+EMAIL_VERIFICATION_TIMEOUT = int(os.environ.get('EMAIL_VERIFICATION_TIMEOUT', 60 * 60 * 24))
+EMAIL_VERIFICATION_RESEND_INTERVAL = int(os.environ.get('EMAIL_VERIFICATION_RESEND_INTERVAL', 60))
+if EMAIL_VERIFICATION_TIMEOUT <= 0 or EMAIL_VERIFICATION_RESEND_INTERVAL <= 0:
+    raise ImproperlyConfigured('Email verification timeout and resend interval must be positive.')
 
 
 MEDIA_URL = '/media/'

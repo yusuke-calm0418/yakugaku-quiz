@@ -17,14 +17,17 @@ class AuthenticationTests(TestCase):
 
     def test_signup_saves_email_and_shows_confirmation(self):
         response = self.client.post(reverse('signup'), {
-            'username': 'newstudent', 'email': 'new@example.com',
+            'email': 'new@example.com',
             'password1': self.password, 'password2': self.password,
         }, follow=True)
-        self.assertRedirects(response, reverse('login'))
-        self.assertContains(response, '登録が完了しました')
-        user = get_user_model().objects.get(username='newstudent')
+        self.assertRedirects(response, reverse('verification_sent'))
+        self.assertContains(response, 'メールをご確認ください')
+        user = get_user_model().objects.get(email='new@example.com')
         self.assertEqual(user.email, 'new@example.com')
         self.assertTrue(user.check_password(self.password))
+        self.assertFalse(user.is_active)
+        self.assertIsNone(user.email_verification.verified_at)
+        self.assertEqual(len(mail.outbox), 1)
         self.assertNotIn('_auth_user_id', self.client.session)
 
     def test_signup_errors_do_not_create_user(self):
@@ -39,7 +42,7 @@ class AuthenticationTests(TestCase):
         self.assertRedirects(self.client.get(reverse('mypage')),
                              reverse('login') + '?next=/mypage/')
         response = self.client.post(reverse('login'), {
-            'username': self.user.username, 'password': self.password,
+            'email': self.user.email, 'password': self.password,
             'next': reverse('mypage'),
         })
         self.assertRedirects(response, reverse('mypage'))
@@ -49,14 +52,14 @@ class AuthenticationTests(TestCase):
 
     def test_login_rejects_external_redirect(self):
         response = self.client.post(reverse('login'), {
-            'username': self.user.username, 'password': self.password,
+            'email': self.user.email, 'password': self.password,
             'next': 'https://example.com/',
         })
         self.assertRedirects(response, '/')
 
     def test_invalid_login_displays_errors(self):
         response = self.client.post(reverse('login'), {
-            'username': self.user.username, 'password': 'wrong',
+            'email': self.user.email, 'password': 'wrong',
         })
         self.assertContains(response, 'role="alert"')
         self.assertNotIn('_auth_user_id', self.client.session)

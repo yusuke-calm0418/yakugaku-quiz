@@ -149,9 +149,9 @@ EC2の停止・起動でPublic IPv4アドレスが変更された場合は、起
 
 ### 2.3 Render一時公開環境
 
-AWS構築前の確認用として、Render Free Web Service（Python 3.12 / Gunicorn / WhiteNoise）とFree PostgreSQL 15を使用する独立した構成を追加する。両サービスを `render.yaml` で無料プランに指定し、`build.sh` で依存関係導入・collectstatic・migrateを実行する。モデル・既存Docker Compose・AWS構成は変更しない。
+AWS構築前の確認用として、Render Free Web Service（Python 3.12 / Gunicorn / WhiteNoise）とFree PostgreSQL 15を使用する独立した構成を追加する。両サービスを `render.yaml` で無料プランに指定し、`build.sh` で依存関係導入・collectstatic・migrateを実行する。既存Docker Compose・AWS構成は変更しない。認証改修の確認状態モデルは通常のmigrationで反映する。
 
-Renderでは環境変数の秘密鍵・DB URLを使用し、DEBUGはFalse、staticはWhiteNoise配信とする。無料環境ではmediaの永続化・配信とメール配送は利用せず、画像不要の問題で一時公開する。ローカルの画像機能・開発用メール出力は維持する。無料DBの期限・管理者作成・初期データ投入・削除手順は[Render一時公開手順](deploy/render.md)を参照する。
+Renderでは環境変数の秘密鍵・DB URLを使用し、DEBUGはFalse、staticはWhiteNoise配信とする。無料環境ではmediaの永続化・配信を利用せず、画像不要の問題で一時公開する。メール確認・パスワード再設定の実配送には、環境変数でResend HTTP API（django-anymail）を有効化する。ローカルの画像機能・開発用consoleメール出力は維持する。無料DBの期限・管理者作成・メール設定・初期データ投入・削除手順は[Render一時公開手順](deploy/render.md)を参照する。
 
 ---
 
@@ -238,11 +238,17 @@ yakugaku-quiz/
 ## 5. 機能一覧 & 画面仕様
 
 ### 5.1 ユーザー認証機能 (`/accounts/`)
-- **新規登録 (`/accounts/signup/`)**: `UserCreationForm` を継承したフォームでユーザー名・メールアドレス・パスワードを登録。メールアドレスは再設定用として必須。登録後は完了案内付きでログイン画面へリダイレクト。
-- **ログイン (`/accounts/login/`)**: Django標準のログイン画面。
+- **新規登録 (`/accounts/signup/`)**: メールアドレス・パスワード・パスワード確認を入力。Django標準Userを維持し、内部usernameをUUIDで生成する。UserとEmailVerificationを同一transactionで作成し、登録直後は `is_active=False`。確認メール送信後に案内画面へ移動する。
+- **メールID**: 入力の前後空白除去・小文字化を共通化。検索では既存emailの前後スペース・大小文字も吸収する。新規登録は重複拒否、ログイン・再送で複数一致した場合は誰も選ばない。標準UserのemailへのUNIQUE制約追加や既存データの変更は行わない。同時登録等で重複が発生した場合もメールログインは拒否する。
+- **メール確認 (`/accounts/verify-email/<token>/`)**: 専用saltのDjango署名付きtokenで確認。既定の期限は24時間（`EMAIL_VERIFICATION_TIMEOUT`、秒）。token内のユーザーIDとemailが一致する未確認ユーザーのみ `verified_at` を保存して有効化する。email変更・改ざん・期限切れ等は再送導線付き案内画面へ。確認済みリンクは再実行しても有効化処理を行わず、管理者停止を解除しない。確認後の自動ログインは行わない。
+- **確認メール再送 (`/accounts/resend-verification/`)**: 確認管理レコードのある未確認・非activeユーザーのみ送信する。存在しない・確認済み・停止済み・重複・送信失敗を含め共通案内を返す。`last_sent_at` の条件付き更新で同時リクエストも抑止し、既定60秒（`EMAIL_VERIFICATION_RESEND_INTERVAL`、秒）の間隔を設ける。送信失敗も再送間隔の対象とし、未確認レコードを残す。登録時の送信失敗は再送案内を表示する。
+- **確認状態**: `EmailVerification` はUserへのOneToOne、`verified_at` / `last_sent_at` / `created_at`を持つ。既存ユーザーへレコードを一括作成しない。確認済みの停止ユーザーや管理レコードのない非activeユーザーを再送で復活させない。
+- **ログイン (`/accounts/login/`)**: 専用EmailAuthenticationFormをDjango標準LoginViewに指定し、emailで一意なUserを解決後に標準authenticateへ内部usernameとパスワードを渡す。未確認・非activeは拒否する。確認管理レコードのない既存activeユーザーは、一意のemailと正しいパスワードで利用可能。セッション・安全な `next` 復帰を維持する。
+- **管理画面 (`/admin/`)**: 従来のusername＋パスワードを維持。AUTH_USER_MODEL・AUTHENTICATION_BACKENDSは変更しない。
 - **ログアウト (`/accounts/logout/`)**: POSTリクエストによるセーフログアウト。
-- **パスワード再設定 (`/accounts/password_reset/`)**: 登録メールアドレスに再設定リンクを送信し、新しいパスワードを設定。無効・使用済みリンクには再送信導線を表示。開発環境ではメールをコンソール出力。
-- 認証画面は共通ヘッダー・フッター付きのレスポンシブ表示。入力エラーは日本語で表示。
+- **パスワード再設定 (`/accounts/password_reset/`)**: Django標準処理を維持。メール確認と同じメールBackendを使用する。未確認ユーザーは確認メール再送へ案内する。無効・使用済みリンクには再設定メールの再送導線を表示する。
+- **メール配送**: `EMAIL_PROVIDER=console`（既定）は開発ログ出力、`resend` はAnymailのResend HTTP API。Resendでは `RESEND_API_KEY` / `DEFAULT_FROM_EMAIL` が必須。確認URLのoriginは `SITE_URL` で指定し、未指定時はRenderの自動ホスト、ローカルは `http://localhost:8000`。将来AWSはSES API＋IAM Roleを想定し、Backendと配送設定の変更で対応する（AWS構築・SES実接続は未実施）。
+- 認証画面は共通ヘッダー・フッター付きのレスポンシブ表示。入力エラーは日本語で表示。共通fields.htmlの全パスワード欄に表示／非表示ボタンを設ける。JS無効時も通常入力でき、表示切替はフォームを送信しない。内部usernameは一般画面・メールへ表示しない。
 
 ### 5.2 トップ画面 (`/`)
 - ログイン状況に応じた分岐表示。
@@ -320,7 +326,10 @@ yakugaku-quiz/
 | `/quiz/` | `quiz.views.question_view` | クイズ出題・回答・解説画面 |
 | `/mypage/` | `accounts.views.mypage` | 学習データ・統計マイページ |
 | `/accounts/signup/` | `accounts.views.signup` | 新規会員登録 |
-| `/accounts/login/` | `django.contrib.auth.views.LoginView` | ログイン |
+| `/accounts/login/` | `django.contrib.auth.views.LoginView` + EmailAuthenticationForm | メールログイン |
+| `/accounts/verify-email/<token>/` | `accounts.views.verify_email` | メール確認・有効化 |
+| `/accounts/verification-sent/` | `accounts.views.verification_sent` | 確認メール案内 |
+| `/accounts/resend-verification/` | `accounts.views.resend_verification` | 確認メール再送 |
 | `/accounts/logout/` | `django.contrib.auth.views.LogoutView` | ログアウト |
 | `/admin/` | `django.contrib.admin.site.urls` | Django管理画面 |
 

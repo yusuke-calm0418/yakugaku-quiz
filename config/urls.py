@@ -17,8 +17,13 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import path, include
-from accounts.views import home, mypage, signup, news_list, news_detail
+from accounts.forms import EmailAuthenticationForm
+from accounts.views import (
+    home, mypage, signup, news_list, news_detail,
+    verify_email, verification_sent, resend_verification,
+)
 from quiz.views import question_view, question_list_view, question_select_view
 
 urlpatterns = [
@@ -33,8 +38,12 @@ urlpatterns = [
     path('questions/', question_list_view, name='question_list'),
 
     # ログイン系
+    path('accounts/login/', auth_views.LoginView.as_view(authentication_form=EmailAuthenticationForm), name='login'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/signup/', signup, name='signup'),
+    path('accounts/verify-email/<str:token>/', verify_email, name='verify_email'),
+    path('accounts/verification-sent/', verification_sent, name='verification_sent'),
+    path('accounts/resend-verification/', resend_verification, name='resend_verification'),
     
     path('news/', news_list, name='news_list'),
     path('news/<int:pk>/', news_detail, name='news_detail'),

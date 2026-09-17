@@ -5,7 +5,7 @@
 
 ## 主な機能
 
-- ユーザー登録、ログイン、ログアウト
+- メール確認付きユーザー登録、メールアドレス＋パスワードでのログイン、ログアウト
 - 4択クイズ（必須問題: 単一選択 / 一般問題: 複数選択）
 - 回答履歴の保存
 - 正答率の表示
@@ -79,10 +79,13 @@ docker compose exec web python manage.py createsuperuser
 
 ## 動作確認の流れ
 
-1. 新規登録: `/accounts/signup/`
-2. ログイン: `/accounts/login/`
-3. クイズ実施: `/quiz/`
-4. マイページ確認: `/mypage/`
+1. 新規登録: `/accounts/signup/` でメールアドレスとパスワードを入力
+2. `docker compose logs web` に出る確認メールのURLを開く（ローカルは実メールを送信しません）。登録直後は未確認状態で、ログインできません。
+3. ログイン: `/accounts/login/` でメールアドレス＋パスワードを入力。届かない場合は `/accounts/resend-verification/` から再送できます（既定60秒間隔、確認リンクは24時間有効）。
+4. クイズ実施: `/quiz/`
+5. マイページ確認: `/mypage/`
+
+`/admin/` は従来のユーザー名＋パスワードでログインします。一般画面では内部ユーザー名を表示しません。パスワード欄には表示／非表示切替があります。
 
 ## テスト
 
@@ -122,7 +125,9 @@ docker compose exec web python manage.py test
 ## 補足
 
 - 開発用設定のため `DEBUG=True` です。
-- メール送信はコンソールバックエンドを使用しているため、パスワードリセットメールはコンテナログに出力されます。
+- `EMAIL_PROVIDER=console` が既定です。確認メール・パスワードリセットメールはコンテナログに出力されるため、その内容を共有しないでください。開発用SECRET_KEYはコンテナ再起動で変わり、既発行リンクも無効になります。必要なら固定値を環境変数で設定してください。
+- 確認URLは `SITE_URL` で切替可能です（ローカル既定: `http://localhost:8000`）。`.env` の自動読み込みはありません。DockerではComposeのenvironment等から環境変数をコンテナへ渡す必要があります。
+- Renderの実配送は `EMAIL_PROVIDER=resend` / `RESEND_API_KEY` / `DEFAULT_FROM_EMAIL` を設定します。手順・送信元ドメインの条件はデプロイ手順を参照してください。将来のAWSではSES APIへ切り替える方針です。
 - Render無料枠での一時公開は[デプロイ手順](docs/deploy/render.md)を参照してください。Renderでは `DEBUG=False` です。
 
 ## お知らせの投稿

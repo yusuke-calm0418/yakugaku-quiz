@@ -85,6 +85,31 @@
   border-color: #DC716C;
 }
 
+.auth-password {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-password input {
+  flex: 1;
+  min-width: 0;
+}
+
+.auth-password-toggle {
+  flex-shrink: 0;
+  min-width: 64px;
+  min-height: 48px;
+  padding: 8px;
+  border: 1px solid #CDD9EA;
+  border-radius: 8px;
+  background: #E7F4F0;
+  color: #19273B;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
 .auth-card :focus-visible {
   outline: 3px solid #39A378;
   outline-offset: 3px;

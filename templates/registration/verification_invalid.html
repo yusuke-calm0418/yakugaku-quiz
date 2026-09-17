@@ -1,0 +1,8 @@
+{% extends 'registration/base.html' %}
+{% block title %}確認リンクをご確認ください | 薬剤師国家試験対策{% endblock %}
+{% block auth_content %}
+<h2 id="auth-title">確認リンクをご確認ください</h2>
+<p class="auth-error" role="alert">この確認リンクは無効または期限切れです。確認メールを再送してください。</p>
+<a class="auth-secondary" href="{% url 'resend_verification' %}">確認メールを再送する</a>
+<div class="auth-footer"><a href="{% url 'login' %}">ログインへ戻る</a></div>
+{% endblock %}

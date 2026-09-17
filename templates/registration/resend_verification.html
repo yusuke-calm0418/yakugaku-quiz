@@ -1,0 +1,12 @@
+{% extends 'registration/base.html' %}
+{% block title %}確認メールの再送 | 薬剤師国家試験対策{% endblock %}
+{% block auth_content %}
+<h2 id="auth-title">確認メールの再送</h2>
+<p class="auth-description">登録したメールアドレスを入力してください。</p>
+<form method="post">
+  {% csrf_token %}
+  {% include 'registration/fields.html' %}
+  <button class="auth-submit" type="submit">確認メールを再送する</button>
+</form>
+<div class="auth-footer"><a href="{% url 'login' %}">ログインへ戻る</a></div>
+{% endblock %}

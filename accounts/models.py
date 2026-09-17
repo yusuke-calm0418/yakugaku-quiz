@@ -1,6 +1,15 @@
+from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+
+
+class EmailVerification(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                related_name='email_verification')
+    verified_at = models.DateTimeField(null=True, blank=True)
+    last_sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class NewsQuerySet(models.QuerySet):

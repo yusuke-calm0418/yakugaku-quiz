@@ -1,0 +1,8 @@
+{% extends 'registration/base.html' %}
+{% block title %}メールアドレスの確認 | 薬剤師国家試験対策{% endblock %}
+{% block auth_content %}
+<h2 id="auth-title">メールアドレスの確認</h2>
+{% if already_verified %}<p>このメールアドレスは既に確認済みです。</p>
+{% else %}<p>メールアドレスの確認が完了しました。ログインしてください。</p>{% endif %}
+<div class="auth-footer"><a href="{% url 'login' %}">ログインへ進む</a></div>
+{% endblock %}

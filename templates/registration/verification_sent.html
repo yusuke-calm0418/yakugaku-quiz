@@ -1,0 +1,13 @@
+{% extends 'registration/base.html' %}
+{% block title %}メールをご確認ください | 薬剤師国家試験対策{% endblock %}
+{% block auth_content %}
+<h2 id="auth-title">メールをご確認ください</h2>
+{% if send_failed %}
+<p class="auth-error" role="alert">確認メールを送信できませんでした。時間を置いて再送してください。</p>
+{% else %}
+<p>確認が必要なアカウントが存在する場合、確認メールを送信しました。</p>
+{% endif %}
+<p class="auth-help">メール内のリンクを開いて登録を完了してください。届かない場合は迷惑メールフォルダをご確認のうえ、時間を置いて再送してください。</p>
+<a class="auth-secondary" href="{% url 'resend_verification' %}">確認メールを再送する</a>
+<div class="auth-footer"><a href="{% url 'login' %}">ログインへ戻る</a></div>
+{% endblock %}

@@ -82,7 +82,7 @@
         <!-- Auth Actions -->
         <div class="l-header__auth">
           {% if user.is_authenticated %}
-            <span class="l-header__user-greet">ようこそ <strong>{{ user.username }}</strong> さん</span>
+            <span class="l-header__user-greet">ようこそ</span>
             <form action="/accounts/logout/" method="post" class="l-header__logout">
               {% csrf_token %}
               <button type="submit" class="c-btn c-btn--outline c-btn--sm">ログアウト</button>

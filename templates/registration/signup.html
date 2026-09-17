@@ -2,11 +2,12 @@
 {% block title %}新規登録 | 薬剤師国家試験対策{% endblock %}
 {% block auth_content %}
 <h2 id="auth-title">新規登録</h2>
-<p class="auth-description">アカウントを作って、学習の記録を残しましょう。</p>
+<p class="auth-description">登録後に届くメールのリンクを開くと、アカウントを利用できます。</p>
 <form method="post">
   {% csrf_token %}
   {% include 'registration/fields.html' %}
-  <button class="auth-submit" type="submit">アカウントを作成</button>
+  <button class="auth-submit" type="submit">確認メールを送信</button>
 </form>
+<p class="auth-text-link"><a href="{% url 'resend_verification' %}">確認メールを再送する</a></p>
 <div class="auth-footer"><p>すでにアカウントをお持ちの方</p><a href="{% url 'login' %}">ログインはこちら</a></div>
 {% endblock %}

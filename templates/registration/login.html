@@ -2,7 +2,7 @@
 {% block title %}ログイン | 薬剤師国家試験対策{% endblock %}
 {% block auth_content %}
 <h2 id="auth-title">ログイン</h2>
-<p class="auth-description">今日の学習を始めましょう。</p>
+<p class="auth-description">メールアドレスとパスワードでログインしてください。</p>
 {% for message in messages %}<p class="auth-notice" role="status">{{ message }}</p>{% endfor %}
 {% if next and not form.errors %}<p class="auth-notice">続けるにはログインしてください。</p>{% endif %}
 <form method="post">
@@ -12,5 +12,6 @@
   <p class="auth-text-link"><a href="{% url 'password_reset' %}">パスワードをお忘れですか？</a></p>
   <button class="auth-submit" type="submit">ログイン</button>
 </form>
+<p class="auth-text-link"><a href="{% url 'resend_verification' %}">メールアドレスの確認がお済みでない方</a></p>
 <div class="auth-footer"><p>アカウントをお持ちでない方</p><a class="auth-secondary" href="{% url 'signup' %}">新規登録</a></div>
 {% endblock %}

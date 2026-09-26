@@ -1,4 +1,5 @@
 resource "aws_budgets_budget" "monthly" {
+  count        = var.enable_budgets ? 1 : 0
   name         = "${var.project_name}-monthly"
   budget_type  = "COST"
   limit_amount = format("%.2f", 3000 / var.budget_usd_jpy)

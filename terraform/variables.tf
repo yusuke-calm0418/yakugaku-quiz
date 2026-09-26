@@ -54,6 +54,7 @@ variable "domain_name" {
 variable "hosted_zone_id" {
   description = "既存のRoute 53パブリックホストゾーンID"
   type        = string
+  default     = ""
 }
 
 variable "django_secret_key" {
@@ -87,4 +88,22 @@ variable "budget_usd_jpy" {
     condition     = var.budget_usd_jpy > 0
     error_message = "正の換算レートを指定してください。"
   }
+}
+
+variable "use_ministack" {
+  description = "MiniStackを使用するか"
+  type        = bool
+  default     = false
+}
+
+variable "ministack_ami_id" {
+  description = "MiniStackで使用するAMI ID"
+  type        = string
+  default     = ""
+}
+
+variable "enable_budgets" {
+  description = "AWS Budgetsを作成するか"
+  type        = bool
+  default     = true
 }

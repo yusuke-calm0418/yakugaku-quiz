@@ -64,3 +64,6 @@ terraform.rc
 # Terraform saved plans
 *.tfplan
 **/tfplan
+
+# ministack
+ministack/state/
